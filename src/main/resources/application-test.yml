@@ -1,0 +1,63 @@
+spring:
+  main:
+    allow-bean-definition-overriding: true
+  datasource:
+    url: jdbc:h2:mem:planwith;MODE=MySQL;DB_CLOSE_DELAY=-1;DATABASE_TO_LOWER=TRUE
+    username: sa
+    password:
+    driver-class-name: org.h2.Driver
+  jpa:
+    hibernate:
+      ddl-auto: create-drop
+    database-platform: org.hibernate.dialect.H2Dialect
+  sql:
+    init:
+      mode: never
+  autoconfigure:
+    exclude:
+      - org.springframework.boot.autoconfigure.data.redis.RedisAutoConfiguration
+      - org.springframework.boot.autoconfigure.data.redis.RedisRepositoriesAutoConfiguration
+      - org.springframework.boot.autoconfigure.mongo.MongoAutoConfiguration
+      - org.springframework.boot.autoconfigure.data.mongo.MongoDataAutoConfiguration
+      - org.springframework.boot.autoconfigure.data.mongo.MongoRepositoriesAutoConfiguration
+      - org.springframework.boot.autoconfigure.kafka.KafkaAutoConfiguration
+      - org.springframework.cloud.netflix.eureka.EurekaClientAutoConfiguration
+      - org.springframework.cloud.netflix.eureka.EurekaDiscoveryClientConfiguration
+
+eureka:
+  client:
+    enabled: false
+    register-with-eureka: false
+    fetch-registry: false
+
+app:
+  gateway:
+    internal-token: test-gateway-token
+    trust-check-enabled: true
+  jwt:
+    issuer: http://localhost:8080
+    audience: planwith-api
+    key-id: test-key
+    access-token-ttl: 15m
+    refresh-token-ttl: 14d
+  refresh-cookie:
+    secure: false
+    same-site: Lax
+    path: /api/v1/auth
+  cors:
+    enabled: false
+  sse:
+    ticket-ttl: 30s
+
+email:
+  verification:
+    mock-mode: true
+
+aws:
+  rekognition:
+    enabled: false
+
+logging:
+  level:
+    root: WARN
+    com.planwith.user: INFO

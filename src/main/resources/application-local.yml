@@ -1,0 +1,28 @@
+spring:
+  datasource:
+    url: ${DB_URL:jdbc:mysql://localhost:3306/planwith?serverTimezone=UTC&characterEncoding=UTF-8}
+    username: ${DB_USERNAME:root}
+    password: ${DB_PASSWORD:password}
+
+eureka:
+  client:
+    register-with-eureka: true
+    fetch-registry: true
+
+app:
+  gateway:
+    internal-token: ${GATEWAY_INTERNAL_TOKEN:local-gateway-internal-token}
+    trust-check-enabled: true
+  jwt:
+    private-key-pem: ${JWT_PRIVATE_KEY_PEM:}
+    public-key-pem: ${JWT_PUBLIC_KEY_PEM:}
+  cors:
+    enabled: false
+
+email:
+  verification:
+    mock-mode: ${EMAIL_MOCK_MODE:true}
+
+aws:
+  rekognition:
+    enabled: ${REKOGNITION_ENABLED:false}
