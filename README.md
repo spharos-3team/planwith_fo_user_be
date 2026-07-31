@@ -69,3 +69,14 @@ Default `test` / `build` do **not** require Docker.
 ## Compose
 
 `compose.dependencies.yml` includes **MySQL, MongoDB, Redis, Kafka only** (no discovery/gateway/backend/frontend).
+
+## MSA Integration
+
+| Service | Eureka ID | Port |
+|---------|-----------|------|
+| Discovery | (server) | 8761 |
+| This service | `fo-user-be` | 8080 |
+| Gateway | `gateway` | 8000 |
+
+Gateway must send the same `GATEWAY_INTERNAL_TOKEN` this service expects.
+Local runbook (sibling checkouts): see `../LOCAL_INTEGRATION.md`.
