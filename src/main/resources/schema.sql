@@ -50,21 +50,21 @@ CREATE TABLE IF NOT EXISTS terms (
     is_active BOOLEAN NOT NULL DEFAULT TRUE
 );
 
--- 필수 약관 3개 + 선택 약관 예시 1개 (실제 내용/URL은 팀에서 채워주세요)
+-- 필수 약관 3개 + 선택 약관 예시 1개 (본문: /api/v1/terms/docs/{slug})
 INSERT INTO terms (id, title, content_url, is_required, display_order, is_active)
-SELECT 1, '이용약관 동의', NULL, TRUE, 1, TRUE
+SELECT 1, '이용약관 동의', '/api/v1/terms/docs/service', TRUE, 1, TRUE
 WHERE NOT EXISTS (SELECT 1 FROM terms WHERE id = 1);
 
 INSERT INTO terms (id, title, content_url, is_required, display_order, is_active)
-SELECT 2, '개인정보 수집 및 이용 동의', NULL, TRUE, 2, TRUE
+SELECT 2, '개인정보 수집 및 이용 동의', '/api/v1/terms/docs/privacy', TRUE, 2, TRUE
 WHERE NOT EXISTS (SELECT 1 FROM terms WHERE id = 2);
 
 INSERT INTO terms (id, title, content_url, is_required, display_order, is_active)
-SELECT 3, '만 14세 이상입니다', NULL, TRUE, 3, TRUE
+SELECT 3, '만 14세 이상입니다', '/api/v1/terms/docs/age', TRUE, 3, TRUE
 WHERE NOT EXISTS (SELECT 1 FROM terms WHERE id = 3);
 
 INSERT INTO terms (id, title, content_url, is_required, display_order, is_active)
-SELECT 4, '마케팅 정보 수신 동의 (선택)', NULL, FALSE, 4, TRUE
+SELECT 4, '마케팅 정보 수신 동의 (선택)', '/api/v1/terms/docs/marketing', FALSE, 4, TRUE
 WHERE NOT EXISTS (SELECT 1 FROM terms WHERE id = 4);
 
 CREATE TABLE IF NOT EXISTS user_agreements (
