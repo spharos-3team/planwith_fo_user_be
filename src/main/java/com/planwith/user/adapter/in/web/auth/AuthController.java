@@ -101,7 +101,12 @@ public class AuthController {
             @Valid @RequestBody SocialLoginRequest request,
             HttpServletResponse response
     ) {
-        var result = socialLoginUseCase.socialLogin(request.getProvider(), request.getAccessToken());
+        var result = socialLoginUseCase.socialLogin(
+                request.getProvider(),
+                request.getAccessToken(),
+                request.getAuthorizationCode(),
+                request.getRedirectUri(),
+                request.getState());
         if (result.getTokens() != null) {
             writeRefreshCookie(response, result.getTokens());
         }
@@ -116,6 +121,9 @@ public class AuthController {
         TokenPair tokens = socialSignUpUseCase.socialSignUp(
                 request.getProvider(),
                 request.getAccessToken(),
+                request.getAuthorizationCode(),
+                request.getRedirectUri(),
+                request.getState(),
                 request.getNickname(),
                 request.getAgreedTermIds());
         writeRefreshCookie(response, tokens);

@@ -112,13 +112,33 @@ file:
 
 oauth:
   google:
-    userinfo-uri: https://www.googleapis.com/oauth2/v3/userinfo
+    client-id: ${OAUTH_GOOGLE_CLIENT_ID:}
+    client-secret: ${OAUTH_GOOGLE_CLIENT_SECRET:}
+    token-uri: ${OAUTH_GOOGLE_TOKEN_URI:https://oauth2.googleapis.com/token}
+    userinfo-uri: ${OAUTH_GOOGLE_USERINFO_URI:https://www.googleapis.com/oauth2/v3/userinfo}
   kakao:
-    userinfo-uri: https://kapi.kakao.com/v2/user/me
+    client-id: ${OAUTH_KAKAO_CLIENT_ID:}
+    client-secret: ${OAUTH_KAKAO_CLIENT_SECRET:}
+    token-uri: ${OAUTH_KAKAO_TOKEN_URI:https://kauth.kakao.com/oauth/token}
+    userinfo-uri: ${OAUTH_KAKAO_USERINFO_URI:https://kapi.kakao.com/v2/user/me}
   naver:
-    userinfo-uri: https://openapi.naver.com/v1/nid/me
+    client-id: ${OAUTH_NAVER_CLIENT_ID:}
+    client-secret: ${OAUTH_NAVER_CLIENT_SECRET:}
+    token-uri: ${OAUTH_NAVER_TOKEN_URI:https://nid.naver.com/oauth2.0/token}
+    userinfo-uri: ${OAUTH_NAVER_USERINFO_URI:https://openapi.naver.com/v1/nid/me}
 
 aws:
+  s3:
+    enabled: ${AWS_S3_ENABLED:false}
+    bucket: ${AWS_S3_BUCKET:}
+    region: ${AWS_REGION:ap-northeast-2}
+    access-key: ${AWS_ACCESS_KEY_ID:}
+    secret-key: ${AWS_SECRET_ACCESS_KEY:}
+    key-prefix: ${AWS_S3_KEY_PREFIX:profile-images/}
+    # CloudFront or public bucket base (no trailing slash). Empty => virtual-hosted S3 URL.
+    public-base-url: ${AWS_S3_PUBLIC_BASE_URL:}
+    # Prefer bucket policy / CloudFront over ACL; many buckets disable ACLs.
+    public-read-acl: ${AWS_S3_PUBLIC_READ_ACL:false}
   rekognition:
     enabled: ${REKOGNITION_ENABLED:true}
     region: ${AWS_REGION:ap-northeast-2}

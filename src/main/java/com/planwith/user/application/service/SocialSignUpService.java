@@ -14,9 +14,11 @@ import com.planwith.user.global.exception.ErrorCode;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.util.StringUtils;
 
 import java.util.List;
 import java.util.Set;
+import java.util.UUID;
 
 @Service
 @RequiredArgsConstructor
@@ -27,6 +29,7 @@ public class SocialSignUpService implements SocialSignUpUseCase {
 
     private final UserRepositoryPort userRepositoryPort;
     private final SocialUserInfoPort socialUserInfoPort;
+    private final SocialAccessTokenResolver socialAccessTokenResolver;
     private final ProfanityFilterPort profanityFilterPort;
     private final TermsPort termsPort;
     private final UserAgreementPort userAgreementPort;
@@ -34,9 +37,19 @@ public class SocialSignUpService implements SocialSignUpUseCase {
 
     @Override
     @Transactional
-    public TokenPair socialSignUp(String provider, String accessToken, String nickname, List<Long> agreedTermIds) {
+    public TokenPair socialSignUp(
+            String provider,
+            String accessToken,
+            String authorizationCode,
+            String redirectUri,
+            String state,
+            String nickname,
+            List<Long> agreedTermIds
+    ) {
         LoginType loginType = parseLoginType(provider);
-        SocialUserInfoPort.SocialUserInfo socialUserInfo = socialUserInfoPort.getUserInfo(loginType, accessToken);
+        String resolvedToken = socialAccessTokenResolver.resolve(
+                loginType, accessToken, authorizationCode, redirectUri, state);
+        SocialUserInfoPort.SocialUserInfo socialUserInfo = socialUserInfoPort.getUserInfo(loginType, resolvedToken);
 
         boolean alreadyRegistered = userRepositoryPort
                 .findActiveByLoginTypeAndProviderId(loginType, socialUserInfo.getProviderId())
@@ -47,15 +60,19 @@ public class SocialSignUpService implements SocialSignUpUseCase {
 
         validateRequiredAgreed(agreedTermIds);
 
-        String rawNickname = (nickname != null && !nickname.isBlank())
+        String rawNickname = StringUtils.hasText(nickname)
                 ? nickname
                 : socialUserInfo.getNickname();
         profanityFilterPort.validate(rawNickname);
         String uniqueNickname = generateUniqueNickname(rawNickname);
 
+        String email = StringUtils.hasText(socialUserInfo.getEmail())
+                ? socialUserInfo.getEmail()
+                : loginType.name().toLowerCase() + "_" + socialUserInfo.getProviderId() + "@social.local";
+
         User user = User.createSocial(
                 DEFAULT_GRADE_ID,
-                socialUserInfo.getEmail(),
+                email,
                 uniqueNickname,
                 loginType,
                 socialUserInfo.getProviderId()
@@ -85,7 +102,7 @@ public class SocialSignUpService implements SocialSignUpUseCase {
     }
 
     private String generateUniqueNickname(String base) {
-        String candidate = (base == null || base.isBlank()) ? "사용자" : base;
+        String candidate = StringUtils.hasText(base) ? base : "사용자";
         if (candidate.length() > 10) {
             candidate = candidate.substring(0, 10);
         }
@@ -93,7 +110,13 @@ public class SocialSignUpService implements SocialSignUpUseCase {
         int suffix = 0;
         while (userRepositoryPort.existsActiveByNickname(result)) {
             suffix++;
-            result = candidate + suffix;
+            String suffixText = String.valueOf(suffix);
+            int maxBase = Math.max(1, 10 - suffixText.length());
+            result = candidate.substring(0, Math.min(candidate.length(), maxBase)) + suffixText;
+            if (suffix > 9999) {
+                result = UUID.randomUUID().toString().substring(0, 8);
+                break;
+            }
         }
         return result;
     }

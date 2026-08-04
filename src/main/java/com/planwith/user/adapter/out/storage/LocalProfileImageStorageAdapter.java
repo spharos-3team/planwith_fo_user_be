@@ -4,6 +4,7 @@ import com.planwith.user.application.port.out.ProfileImageStoragePort;
 import com.planwith.user.global.exception.CustomException;
 import com.planwith.user.global.exception.ErrorCode;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.stereotype.Component;
 import org.springframework.util.StringUtils;
 
@@ -14,6 +15,7 @@ import java.nio.file.Paths;
 import java.util.UUID;
 
 @Component
+@ConditionalOnProperty(prefix = "aws.s3", name = "enabled", havingValue = "false", matchIfMissing = true)
 public class LocalProfileImageStorageAdapter implements ProfileImageStoragePort {
 
     private final String uploadDir;
@@ -23,7 +25,9 @@ public class LocalProfileImageStorageAdapter implements ProfileImageStoragePort 
             @Value("${file.upload-dir:/tmp/planwith-uploads}") String uploadDir,
             @Value("${file.public-base-url:/files}") String publicBaseUrl) {
         this.uploadDir = uploadDir;
-        this.publicBaseUrl = publicBaseUrl;
+        this.publicBaseUrl = publicBaseUrl.endsWith("/")
+                ? publicBaseUrl.substring(0, publicBaseUrl.length() - 1)
+                : publicBaseUrl;
     }
 
     @Override
@@ -39,7 +43,7 @@ public class LocalProfileImageStorageAdapter implements ProfileImageStoragePort 
 
             return publicBaseUrl + "/" + fileName;
         } catch (IOException e) {
-            throw new CustomException(ErrorCode.INVALID_IMAGE_FORMAT);
+            throw new CustomException(ErrorCode.IMAGE_STORAGE_FAILED);
         }
     }
 

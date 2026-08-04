@@ -18,13 +18,22 @@ public class SocialLoginService implements SocialLoginUseCase {
 
     private final UserRepositoryPort userRepositoryPort;
     private final SocialUserInfoPort socialUserInfoPort;
+    private final SocialAccessTokenResolver socialAccessTokenResolver;
     private final TokenIssuanceService tokenIssuanceService;
 
     @Override
     @Transactional
-    public SocialAuthResult socialLogin(String provider, String accessToken) {
+    public SocialAuthResult socialLogin(
+            String provider,
+            String accessToken,
+            String authorizationCode,
+            String redirectUri,
+            String state
+    ) {
         LoginType loginType = parseLoginType(provider);
-        SocialUserInfoPort.SocialUserInfo socialUserInfo = socialUserInfoPort.getUserInfo(loginType, accessToken);
+        String resolvedToken = socialAccessTokenResolver.resolve(
+                loginType, accessToken, authorizationCode, redirectUri, state);
+        SocialUserInfoPort.SocialUserInfo socialUserInfo = socialUserInfoPort.getUserInfo(loginType, resolvedToken);
 
         return userRepositoryPort
                 .findActiveByLoginTypeAndProviderId(loginType, socialUserInfo.getProviderId())

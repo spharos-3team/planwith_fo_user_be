@@ -54,6 +54,8 @@ email:
     mock-mode: true
 
 aws:
+  s3:
+    enabled: false
   rekognition:
     enabled: false
 

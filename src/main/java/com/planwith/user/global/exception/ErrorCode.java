@@ -25,6 +25,8 @@ public enum ErrorCode {
     SSE_TICKET_INVALID(HttpStatus.UNAUTHORIZED, "SSE 티켓이 유효하지 않습니다."),
     ALREADY_WITHDRAWN(HttpStatus.BAD_REQUEST, "이미 탈퇴한 계정입니다."),
     SOCIAL_LOGIN_FAILED(HttpStatus.UNAUTHORIZED, "소셜 로그인에 실패했습니다."),
+    SOCIAL_OAUTH_MISCONFIGURED(HttpStatus.INTERNAL_SERVER_ERROR, "소셜 로그인 OAuth 설정이 올바르지 않습니다."),
+    SOCIAL_CREDENTIAL_REQUIRED(HttpStatus.BAD_REQUEST, "accessToken 또는 authorizationCode(+redirectUri)가 필요합니다."),
     REQUIRED_TERMS_NOT_AGREED(HttpStatus.BAD_REQUEST, "필수 약관에 모두 동의해주세요."),
     PROFANITY_DETECTED(HttpStatus.BAD_REQUEST, "닉네임 또는 소개글에 사용할 수 없는 표현이 포함되어 있습니다."),
     INVALID_IMAGE_FORMAT(HttpStatus.BAD_REQUEST, "이미지는 jpg, jpeg, png, webp 형식만 등록할 수 있습니다."),
@@ -33,6 +35,7 @@ public enum ErrorCode {
     SOCIAL_ACCOUNT_ALREADY_REGISTERED(HttpStatus.CONFLICT, "이미 가입된 소셜 계정입니다."),
     INAPPROPRIATE_IMAGE(HttpStatus.BAD_REQUEST, "부적절한 콘텐츠가 감지되어 등록할 수 없는 이미지입니다."),
     IMAGE_MODERATION_FAILED(HttpStatus.SERVICE_UNAVAILABLE, "이미지 검열 중 오류가 발생했습니다. 잠시 후 다시 시도해주세요."),
+    IMAGE_STORAGE_FAILED(HttpStatus.SERVICE_UNAVAILABLE, "이미지 저장에 실패했습니다. 잠시 후 다시 시도해주세요."),
     INTERNAL_ERROR(HttpStatus.INTERNAL_SERVER_ERROR, "서버 오류가 발생했습니다."),
     VALIDATION_ERROR(HttpStatus.BAD_REQUEST, "잘못된 요청입니다.");
 

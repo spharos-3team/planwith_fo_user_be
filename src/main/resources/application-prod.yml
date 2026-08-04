@@ -38,5 +38,9 @@ email:
     mock-mode: false
 
 aws:
+  s3:
+    enabled: true
+    bucket: ${AWS_S3_BUCKET}
+    public-base-url: ${AWS_S3_PUBLIC_BASE_URL:}
   rekognition:
     enabled: true

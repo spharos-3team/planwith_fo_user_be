@@ -24,5 +24,7 @@ email:
     mock-mode: ${EMAIL_MOCK_MODE:true}
 
 aws:
+  s3:
+    enabled: ${AWS_S3_ENABLED:false}
   rekognition:
     enabled: ${REKOGNITION_ENABLED:false}
