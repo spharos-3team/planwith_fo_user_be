@@ -74,3 +74,11 @@ CREATE TABLE IF NOT EXISTS user_agreements (
     agreed_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
     INDEX idx_user_id (user_id)
 );
+
+-- 비속어 사전 (시드: sql/banned_word_seed_lol2020.sql — 수동 1회 실행)
+CREATE TABLE IF NOT EXISTS banned_word (
+    id BIGINT AUTO_INCREMENT PRIMARY KEY,
+    word VARCHAR(100) NOT NULL,
+    category VARCHAR(50) NOT NULL,
+    UNIQUE KEY uk_banned_word_word (word)
+);
