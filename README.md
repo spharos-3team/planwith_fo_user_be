@@ -80,3 +80,12 @@ Default `test` / `build` do **not** require Docker.
 
 Gateway must send the same `GATEWAY_INTERNAL_TOKEN` this service expects.
 Local runbook (sibling checkouts): see `../LOCAL_INTEGRATION.md`.
+
+## Frontend handoff
+
+팀 FE 연동 스펙: [`docs/FE_API.md`](docs/FE_API.md)
+
+- 로컬 Base URL: Gateway `http://localhost:8000`
+- Refresh Token: HttpOnly cookie (`refresh_token`)
+- Access Token: response body → `Authorization: Bearer`
+- 임시 `temp-fe`는 제거됨. 실제 FE를 Gateway에 연결하세요.
