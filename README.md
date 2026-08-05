@@ -1,5 +1,91 @@
-﻿# planwith_fo_user_be
+# PlanWith FO User Backend
 
-프론트 오피스 유저 백엔드 저장소입니다.
+Spring Boot MSA Backend for project **planwith** (`fo-user-be`).
 
-초기 구현은 `feature/user-auth-backend` PR에서 리뷰·승인 후 `main`에 머지합니다.
+| Item | Value |
+|------|-------|
+| Repository | `planwith_fo_user_be` |
+| Package | `com.planwith.user` |
+| Spring application name / Eureka ID | `fo-user-be` |
+| Discovery service ID | `discovery` |
+
+## Versions
+
+| Component | Version |
+|-----------|---------|
+| Java | 21 (Gradle toolchain) |
+| Spring Boot | 3.3.2 |
+| Spring Cloud | 2023.0.3 |
+| Build | Gradle Groovy DSL |
+
+## Architecture
+
+Hexagonal layers: `adapter → application → domain`
+
+Domain boundaries (MSA-ready in one deployable): `auth`, `system`, `user`, `plan`, `payment`, `realtime`
+
+## Run (local)
+
+1. Start dependencies: `docker compose -f compose.dependencies.yml up -d`
+2. Copy `.env.example` and set secrets (especially `GATEWAY_INTERNAL_TOKEN` and JWT keys for non-local)
+3. `./gradlew bootRun` (default profile: `local`)
+
+- Port: `8080`
+- API prefix: `/api/v1`
+- Timezone: UTC
+- Eureka Service ID: `fo-user-be`
+- Discovery default zone: `http://localhost:8761/eureka/` (service id `discovery`)
+
+### Profiles
+
+| Profile | Purpose |
+|---------|---------|
+| `local` | Local with deps; ephemeral JWT keys if PEM paths empty |
+| `local-direct` | CORS on, Gateway trust check off (direct client) |
+| `test` | H2 + in-memory Redis adapters; Eureka/Mongo/Kafka/Redis auto-config off |
+| `prod` | Requires env secrets; Gateway trust on |
+
+## Auth (Backend responsibility)
+
+- Signup / Login / Refresh / Logout / Logout-all (+ email/social helpers)
+- Password hashing via `PasswordEncoderFactories.createDelegatingPasswordEncoder()`
+- Access Token: **RS256** via `NimbusJwtEncoder`, header `kid`, claims `iss/sub/aud/iat/nbf/exp/jti/roles/scope/session_id`
+- Refresh Token: opaque `SecureRandom`, **hash only in Redis**, rotation + family reuse detection, **HttpOnly cookie only**
+- JWKS: `GET /oauth2/jwks`
+
+Gateway validates Access Tokens. Backend trusts Gateway via `X-Gateway-Internal-Token` and reads user context headers (`X-Auth-*`).
+
+## Tests / Build
+
+```bash
+./gradlew clean test
+./gradlew clean build
+./gradlew integrationTest   # Testcontainers; requires Docker + RUN_TESTCONTAINERS=true
+docker compose -f compose.dependencies.yml config
+```
+
+Default `test` / `build` do **not** require Docker.
+
+## Compose
+
+`compose.dependencies.yml` includes **MySQL, MongoDB, Redis, Kafka only** (no discovery/gateway/backend/frontend).
+
+## MSA Integration
+
+| Service | Eureka ID | Port |
+|---------|-----------|------|
+| Discovery | (server) | 8761 |
+| This service | `fo-user-be` | 8080 |
+| Gateway | `gateway` | 8000 |
+
+Gateway must send the same `GATEWAY_INTERNAL_TOKEN` this service expects.
+Local runbook (sibling checkouts): see `../LOCAL_INTEGRATION.md`.
+
+## Frontend handoff
+
+팀 FE 연동 스펙: [`docs/FE_API.md`](docs/FE_API.md)
+
+- 로컬 Base URL: Gateway `http://localhost:8000`
+- Refresh Token: HttpOnly cookie (`refresh_token`)
+- Access Token: response body → `Authorization: Bearer`
+- 임시 `temp-fe`는 제거됨. 실제 FE를 Gateway에 연결하세요.
