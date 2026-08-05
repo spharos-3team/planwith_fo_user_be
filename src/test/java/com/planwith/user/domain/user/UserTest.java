@@ -49,4 +49,16 @@ class UserTest {
         assertThat(user.getMemberUuid()).isNotBlank();
         assertThat(user.getGrade()).isEqualTo(User.DEFAULT_GRADE);
     }
+
+    @Test
+    @DisplayName("updateProfile applies non-blank nickname and clears blank image/intro")
+    void updateProfile_partialUpdate() {
+        User user = User.createLocal(User.DEFAULT_GRADE, "a@b.com", "pw", "oldNick", "/a.jpg", "intro");
+
+        user.updateProfile(" newNick ", "", " ");
+
+        assertThat(user.getNickname()).isEqualTo("newNick");
+        assertThat(user.getProfileImage()).isNull();
+        assertThat(user.getIntroduction()).isNull();
+    }
 }

@@ -279,18 +279,88 @@ code 방식도 login과 동일하게 `authorizationCode`/`redirectUri`/`state` �
 - `/oauth2/jwks`
 - 로컬 전용 `/api/v1/dev/**`
 
-그 외(예: `logout-all`, `withdraw`, SSE ticket 등)는 Bearer 필요.
+그 외(예: `logout-all`, `withdraw`, SSE ticket, `/api/v1/members/**` 등)는 Bearer 필요.
 
 ---
 
-## 5. 아직 FO User BE에 없는 것 (다른 담당)
+## 5. 프로필 / 팔로우 (인증 필요)
 
-- 회원 프로필 조회/수정 전용 API (`GET/PATCH /users/me` 등)
+모두 `Authorization: Bearer <accessToken>` 필요 (Gateway 기본 보호).
+
+### 내 프로필 조회
+
+```http
+GET /api/v1/members/me
+```
+
+응답 `data` 예:
+
+```json
+{
+  "memberId": 1,
+  "memberUuid": "a1b2c3d4-...",
+  "nickname": "닉네임",
+  "profileImage": "/files/....jpg",
+  "profileIntro": "소개",
+  "grade": "일반회원",
+  "email": "user@example.com",
+  "followerCount": 12,
+  "followingCount": 3,
+  "followedByMe": null
+}
+```
+
+### 내 프로필 수정
+
+```http
+PATCH /api/v1/members/me
+{
+  "nickname": "새닉네임",
+  "profileImage": "/files/....jpg",
+  "profileIntro": "새소개"
+}
+```
+
+- 보낸 필드만 반영 (null/미포함은 유지). `profileImage`/`profileIntro`를 `""`로 보내면 비움.
+- 닉네임: 2~10자, 비속어·중복 검사
+- 소개: 최대 20자
+
+### 다른 회원 프로필
+
+```http
+GET /api/v1/members/{memberUuid}
+```
+
+- `email` / `memberId`는 노출하지 않음
+- `followedByMe`: 내가 그 회원을 팔로우 중이면 `true`/`false`
+
+### 팔로우 / 언팔로우
+
+```http
+POST   /api/v1/members/{memberUuid}/follow
+DELETE /api/v1/members/{memberUuid}/follow
+```
+
+에러 코드: `CANNOT_FOLLOW_SELF`, `ALREADY_FOLLOWING`, `NOT_FOLLOWING`, `USER_NOT_FOUND`
+
+### 팔로워 / 팔로잉 목록
+
+```http
+GET /api/v1/members/{memberUuid}/followers
+GET /api/v1/members/{memberUuid}/following
+```
+
+`data`는 프로필 요약 배열 (`memberUuid`, `nickname`, `profileImage`, `profileIntro`, `grade`, counts).
+
+---
+
+## 6. 아직 FO User BE에 없는 것 (다른 담당)
+
 - 크리에이터 후원/결제/피드/채팅 API (다른 서비스)
 
 ---
 
-## 6. 로컬 연동 체크리스트
+## 7. 로컬 연동 체크리스트
 
 1. Discovery `:8761`, fo-user-be `:8080`, Gateway `:8000` 기동
 2. FE origin을 Gateway CORS에 추가했는지 확인

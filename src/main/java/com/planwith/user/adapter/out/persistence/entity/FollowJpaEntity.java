@@ -44,4 +44,12 @@ public class FollowJpaEntity {
         this.followeeMemberUuid = followeeMemberUuid;
         this.active = active == null || active;
     }
+
+    public void activate() {
+        this.active = true;
+    }
+
+    public void deactivate() {
+        this.active = false;
+    }
 }

@@ -90,6 +90,18 @@ public class User {
         this.lastLoginAt = at;
     }
 
+    public void updateProfile(String nickname, String profileImage, String introduction) {
+        if (nickname != null && !nickname.isBlank()) {
+            this.nickname = nickname.trim();
+        }
+        if (profileImage != null) {
+            this.profileImage = profileImage.isBlank() ? null : profileImage.trim();
+        }
+        if (introduction != null) {
+            this.introduction = introduction.isBlank() ? null : introduction.trim();
+        }
+    }
+
     /**
      * Soft withdraw with anonymization so unique email/nickname constraints are released immediately.
      * Sets deleted_at and status DELETED; auth/profile fields are cleared for persistence.

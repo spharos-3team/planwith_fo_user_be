@@ -36,6 +36,9 @@ public enum ErrorCode {
     INAPPROPRIATE_IMAGE(HttpStatus.BAD_REQUEST, "부적절한 콘텐츠가 감지되어 등록할 수 없는 이미지입니다."),
     IMAGE_MODERATION_FAILED(HttpStatus.SERVICE_UNAVAILABLE, "이미지 검열 중 오류가 발생했습니다. 잠시 후 다시 시도해주세요."),
     IMAGE_STORAGE_FAILED(HttpStatus.SERVICE_UNAVAILABLE, "이미지 저장에 실패했습니다. 잠시 후 다시 시도해주세요."),
+    CANNOT_FOLLOW_SELF(HttpStatus.BAD_REQUEST, "자기 자신은 팔로우할 수 없습니다."),
+    ALREADY_FOLLOWING(HttpStatus.CONFLICT, "이미 팔로우 중인 회원입니다."),
+    NOT_FOLLOWING(HttpStatus.BAD_REQUEST, "팔로우하지 않은 회원입니다."),
     INTERNAL_ERROR(HttpStatus.INTERNAL_SERVER_ERROR, "서버 오류가 발생했습니다."),
     VALIDATION_ERROR(HttpStatus.BAD_REQUEST, "잘못된 요청입니다.");
 

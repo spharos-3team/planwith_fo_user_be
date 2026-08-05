@@ -62,6 +62,18 @@ public class UserPersistenceAdapter implements UserRepositoryPort {
     }
 
     @Override
+    public Optional<User> findActiveById(Long id) {
+        return loadActiveMember(id).flatMap(this::assemble);
+    }
+
+    @Override
+    public Optional<User> findActiveByMemberUuid(String memberUuid) {
+        return memberJpaRepository.findByMemberUuid(memberUuid)
+                .filter(member -> member.getStatus() != UserStatus.DELETED)
+                .flatMap(this::assemble);
+    }
+
+    @Override
     public Optional<User> findActiveByEmail(String email) {
         return memberAuthJpaRepository.findByLoginTypeAndEmail(LoginType.LOCAL, email)
                 .flatMap(auth -> loadActiveMember(auth.getMemberId())
@@ -78,6 +90,12 @@ public class UserPersistenceAdapter implements UserRepositoryPort {
     @Override
     public boolean existsActiveByNickname(String nickname) {
         return memberProfileJpaRepository.existsActiveByNickname(nickname, UserStatus.DELETED);
+    }
+
+    @Override
+    public boolean existsActiveByNicknameExcludingMemberId(String nickname, Long memberId) {
+        return memberProfileJpaRepository.existsActiveByNicknameExcludingMemberId(
+                nickname, memberId, UserStatus.DELETED);
     }
 
     @Override

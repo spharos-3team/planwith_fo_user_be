@@ -11,11 +11,17 @@ public interface UserRepositoryPort {
 
     Optional<User> findById(Long id);
 
+    Optional<User> findActiveById(Long id);
+
+    Optional<User> findActiveByMemberUuid(String memberUuid);
+
     Optional<User> findActiveByEmail(String email);
 
     boolean existsActiveByEmail(String email);
 
     boolean existsActiveByNickname(String nickname);
+
+    boolean existsActiveByNicknameExcludingMemberId(String nickname, Long memberId);
 
     Optional<User> findActiveByLoginTypeAndProviderId(LoginType loginType, String providerId);
 }
