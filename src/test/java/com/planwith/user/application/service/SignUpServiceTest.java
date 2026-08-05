@@ -1,6 +1,7 @@
 package com.planwith.user.application.service;
 
 import com.planwith.user.application.port.out.EmailVerificationPort;
+import com.planwith.user.application.port.out.MemberGradePort;
 import com.planwith.user.application.port.out.PasswordEncoderPort;
 import com.planwith.user.application.port.out.ProfanityFilterPort;
 import com.planwith.user.application.port.out.TermsPort;
@@ -42,6 +43,8 @@ class SignUpServiceTest {
     private TermsPort termsPort;
     @Mock
     private UserAgreementPort userAgreementPort;
+    @Mock
+    private MemberGradePort memberGradePort;
 
     @InjectMocks
     private SignUpService signUpService;
@@ -76,7 +79,8 @@ class SignUpServiceTest {
         assertThat(captor.getValue().getEmail()).isEqualTo("a@b.com");
         assertThat(captor.getValue().getPassword()).isEqualTo("encoded");
         assertThat(captor.getValue().getGrade()).isEqualTo(User.DEFAULT_GRADE);
-        verify(userAgreementPort).saveAgreements(captor.getValue().getMemberUuid(), List.of(1L, 2L, 3L));
+        verify(userAgreementPort).saveAgreements(anyString(), any());
+        verify(memberGradePort).initializeMember(99L, captor.getValue().getMemberUuid());
     }
 
     @Test

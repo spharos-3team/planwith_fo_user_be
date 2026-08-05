@@ -2,6 +2,7 @@ package com.planwith.user.application.service;
 
 import com.planwith.user.application.dto.TokenPair;
 import com.planwith.user.application.port.in.SocialSignUpUseCase;
+import com.planwith.user.application.port.out.MemberGradePort;
 import com.planwith.user.application.port.out.ProfanityFilterPort;
 import com.planwith.user.application.port.out.SocialUserInfoPort;
 import com.planwith.user.application.port.out.TermsPort;
@@ -31,6 +32,7 @@ public class SocialSignUpService implements SocialSignUpUseCase {
     private final ProfanityFilterPort profanityFilterPort;
     private final TermsPort termsPort;
     private final UserAgreementPort userAgreementPort;
+    private final MemberGradePort memberGradePort;
     private final TokenIssuanceService tokenIssuanceService;
 
     @Override
@@ -77,6 +79,7 @@ public class SocialSignUpService implements SocialSignUpUseCase {
         );
 
         User saved = userRepositoryPort.save(user);
+        memberGradePort.initializeMember(saved.getId(), saved.getMemberUuid());
         userAgreementPort.saveAgreements(saved.getMemberUuid(), agreedTermIds);
 
         return tokenIssuanceService.issueTokens(saved);

@@ -10,7 +10,7 @@ import java.util.UUID;
 @Getter
 public class User {
 
-    public static final String DEFAULT_GRADE = "일반회원";
+    public static final String DEFAULT_GRADE = "ROOKIE";
 
     private Long id;
     private String memberUuid;

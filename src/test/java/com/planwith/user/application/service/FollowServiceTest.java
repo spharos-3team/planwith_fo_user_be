@@ -29,6 +29,7 @@ class FollowServiceTest {
 
     @Mock private UserRepositoryPort userRepositoryPort;
     @Mock private FollowPort followPort;
+    @Mock private GradeService gradeService;
     @InjectMocks private FollowService followService;
 
     @Test

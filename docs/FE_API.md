@@ -287,7 +287,8 @@ code 방식도 login과 동일하게 `authorizationCode`/`redirectUri`/`state` �
 - `/oauth2/jwks`
 - 로컬 전용 `/api/v1/dev/**`
 
-그 외(예: `logout-all`, `withdraw`, SSE ticket, `/api/v1/members/**` 등)는 Bearer 필요.
+그 외(예: `logout-all`, `withdraw`, SSE ticket, `/api/v1/members/**` 중 인증 API 등)는 Bearer 필요.  
+`GET /api/v1/grades`, `/api/v1/internal/**` 은 Gateway public (내부 API는 trust 헤더로 보호).
 
 ---
 
@@ -310,7 +311,7 @@ GET /api/v1/members/me
   "nickname": "닉네임",
   "profileImage": "/files/....jpg",
   "profileIntro": "소개",
-  "grade": "일반회원",
+  "grade": "ROOKIE",
   "email": "user@example.com",
   "followerCount": 12,
   "followingCount": 3,
@@ -362,13 +363,66 @@ GET /api/v1/members/{memberUuid}/following
 
 ---
 
-## 6. 아직 FO User BE에 없는 것 (다른 담당)
+## 6. 회원 등급
 
-- 크리에이터 후원/결제/피드/채팅 API (다른 서비스)
+프로필 `grade` 필드는 등급 코드입니다: `ROOKIE` | `LEAF` | `TRAVELER` | `EXPLORER` | `ADVENTURER` | `MASTER`  
+가입 시 기본값 `ROOKIE`.
+
+### 등급 목록 (공개)
+
+```http
+GET /api/v1/grades
+```
+
+각 항목: `gradeCode`, `nameKo`, `sortOrder`, `monthlyTokenAmount`, `conditions[]` (`metricType`=`STORY|FOLLOWER|LIKE`, `threshold`), `benefits[]` (`benefitCode`, `description`).
+
+### 내 등급 / 보상 내역 (인증 필요)
+
+```http
+GET /api/v1/members/me/grade
+GET /api/v1/members/me/grade/rewards
+GET /api/v1/members/{memberUuid}/grade
+```
+
+`me/grade` 응답에 현재 등급, 지표(`storyCount`/`followerCount`/`likeCount`), 혜택 목록 포함.
+
+### 승급 평가 (내부 연동)
+
+콘텐츠 서비스가 스토리/좋아요 수를 푸시합니다. 팔로워 수는 fo-user-be `follow` 테이블에서 계산합니다.
+
+```http
+POST /api/v1/internal/grades/evaluate
+{
+  "memberUuid": "...",
+  "storyCount": 3,
+  "likeCount": 30
+}
+```
+
+- 조건을 모두 충족하는 **최고 등급**으로만 승급 (강등 없음)
+- Gateway public + BE gateway trust 헤더 필요
+
+### 월간 토큰 보상 기록 (내부)
+
+지갑 이체는 하지 않고 `grade_reward_history`에만 적재합니다.
+
+```http
+POST /api/v1/internal/grades/rewards/monthly
+{ "periodYm": "2026-08" }
+```
+
+`periodYm` 생략 시 현재 월. 동일 member+period는 skip (idempotent).
 
 ---
 
-## 7. 로컬 연동 체크리스트
+## 7. 아직 FO User BE에 없는 것 (다른 담당)
+
+- 크리에이터 후원/결제/피드/채팅 API (다른 서비스)
+- 토큰 지갑 잔액/차감 (등급 보상 내역만 본 서비스)
+
+---
+
+## 8. 로컬 연동 체크리스트
 
 1. Discovery `:8761`, fo-user-be `:8080`, Gateway `:8000` 기동
 2. FE origin을 Gateway CORS에 추가했는지 확인

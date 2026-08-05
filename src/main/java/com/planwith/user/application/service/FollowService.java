@@ -23,6 +23,7 @@ public class FollowService implements FollowMemberUseCase, ListFollowUseCase {
 
     private final UserRepositoryPort userRepositoryPort;
     private final FollowPort followPort;
+    private final GradeService gradeService;
 
     @Override
     @Transactional
@@ -50,6 +51,7 @@ public class FollowService implements FollowMemberUseCase, ListFollowUseCase {
                 followee.getMemberUuid(),
                 true
         ));
+        gradeService.syncFollowerMetric(followee.getMemberUuid());
     }
 
     @Override
@@ -71,6 +73,7 @@ public class FollowService implements FollowMemberUseCase, ListFollowUseCase {
                 relation.followeeMemberUuid(),
                 false
         ));
+        gradeService.syncFollowerMetric(followeeMemberUuid);
     }
 
     @Override

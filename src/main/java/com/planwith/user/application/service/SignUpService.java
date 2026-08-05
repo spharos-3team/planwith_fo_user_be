@@ -2,6 +2,7 @@ package com.planwith.user.application.service;
 
 import com.planwith.user.application.port.in.SignUpUseCase;
 import com.planwith.user.application.port.out.EmailVerificationPort;
+import com.planwith.user.application.port.out.MemberGradePort;
 import com.planwith.user.application.port.out.PasswordEncoderPort;
 import com.planwith.user.application.port.out.ProfanityFilterPort;
 import com.planwith.user.application.port.out.TermsPort;
@@ -28,6 +29,7 @@ public class SignUpService implements SignUpUseCase {
     private final ProfanityFilterPort profanityFilterPort;
     private final TermsPort termsPort;
     private final UserAgreementPort userAgreementPort;
+    private final MemberGradePort memberGradePort;
 
     @Override
     @Transactional
@@ -56,6 +58,7 @@ public class SignUpService implements SignUpUseCase {
         );
 
         User saved = userRepositoryPort.save(user);
+        memberGradePort.initializeMember(saved.getId(), saved.getMemberUuid());
         userAgreementPort.saveAgreements(saved.getMemberUuid(), agreedTermIds);
     }
 

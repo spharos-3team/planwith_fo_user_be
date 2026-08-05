@@ -110,3 +110,66 @@ CREATE TABLE IF NOT EXISTS banned_word (
     category VARCHAR(50) NOT NULL,
     UNIQUE KEY uk_banned_word_word (word)
 );
+
+-- Member grade system (master / conditions / benefits / assignment / metrics / rewards)
+CREATE TABLE IF NOT EXISTS grade (
+    grade_id BIGINT AUTO_INCREMENT PRIMARY KEY,
+    grade_code VARCHAR(30) NOT NULL,
+    name_ko VARCHAR(50) NOT NULL,
+    sort_order INT NOT NULL,
+    monthly_token_amount INT NOT NULL,
+    UNIQUE KEY uk_grade_code (grade_code),
+    UNIQUE KEY uk_grade_sort_order (sort_order)
+);
+
+CREATE TABLE IF NOT EXISTS grade_condition (
+    condition_id BIGINT AUTO_INCREMENT PRIMARY KEY,
+    grade_id BIGINT NOT NULL,
+    metric_type VARCHAR(20) NOT NULL,
+    threshold_value BIGINT NOT NULL,
+    UNIQUE KEY uk_grade_condition (grade_id, metric_type),
+    CONSTRAINT fk_grade_condition_grade FOREIGN KEY (grade_id) REFERENCES grade (grade_id)
+);
+
+CREATE TABLE IF NOT EXISTS grade_benefit (
+    benefit_id BIGINT AUTO_INCREMENT PRIMARY KEY,
+    grade_id BIGINT NOT NULL,
+    benefit_code VARCHAR(40) NOT NULL,
+    description VARCHAR(200) NOT NULL,
+    UNIQUE KEY uk_grade_benefit (grade_id, benefit_code),
+    CONSTRAINT fk_grade_benefit_grade FOREIGN KEY (grade_id) REFERENCES grade (grade_id)
+);
+
+CREATE TABLE IF NOT EXISTS member_grade (
+    member_id BIGINT PRIMARY KEY,
+    member_uuid CHAR(36) NOT NULL,
+    grade_id BIGINT NOT NULL,
+    graded_at DATETIME(6) NOT NULL,
+    CONSTRAINT fk_member_grade_member FOREIGN KEY (member_id) REFERENCES member (member_id),
+    CONSTRAINT fk_member_grade_grade FOREIGN KEY (grade_id) REFERENCES grade (grade_id)
+);
+
+CREATE TABLE IF NOT EXISTS member_grade_metric (
+    member_id BIGINT PRIMARY KEY,
+    member_uuid CHAR(36) NOT NULL,
+    story_count BIGINT NOT NULL DEFAULT 0,
+    follower_count BIGINT NOT NULL DEFAULT 0,
+    like_count BIGINT NOT NULL DEFAULT 0,
+    metrics_updated_at DATETIME(6) NOT NULL,
+    CONSTRAINT fk_member_grade_metric_member FOREIGN KEY (member_id) REFERENCES member (member_id)
+);
+
+CREATE TABLE IF NOT EXISTS grade_reward_history (
+    reward_id BIGINT AUTO_INCREMENT PRIMARY KEY,
+    reward_uuid CHAR(36) NOT NULL,
+    member_id BIGINT NOT NULL,
+    grade_id BIGINT NOT NULL,
+    reward_type VARCHAR(40) NOT NULL,
+    amount INT NOT NULL,
+    period_ym CHAR(7) NOT NULL,
+    granted_at DATETIME(6) NOT NULL,
+    UNIQUE KEY uk_grade_reward_uuid (reward_uuid),
+    UNIQUE KEY uk_grade_reward_period (member_id, reward_type, period_ym),
+    KEY idx_grade_reward_member (member_id),
+    CONSTRAINT fk_grade_reward_grade FOREIGN KEY (grade_id) REFERENCES grade (grade_id)
+);
