@@ -10,22 +10,34 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 public class TermsJpaEntity {
 
+    public static final String TERM_TYPE_REQUIRED = "REQUIRED";
+    public static final String TERM_TYPE_OPTIONAL = "OPTIONAL";
+
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Column(name = "term_id")
     private Long id;
+
+    @Column(name = "term_uuid", nullable = false, unique = true, length = 36)
+    private String termUuid;
 
     @Column(nullable = false, length = 100)
     private String title;
 
-    @Column(name = "content_url", length = 255)
-    private String contentUrl;
+    @Column(name = "term_type", nullable = false, length = 30)
+    private String termType;
 
-    @Column(name = "is_required", nullable = false)
-    private boolean required;
+    @Column(length = 30)
+    private String version;
 
-    @Column(name = "display_order", nullable = false)
-    private int displayOrder;
+    /** Docs path exposed as API contentUrl (e.g. /api/v1/terms/docs/service). */
+    @Column(length = 500)
+    private String content;
 
     @Column(name = "is_active", nullable = false)
     private boolean active;
+
+    public boolean isRequired() {
+        return TERM_TYPE_REQUIRED.equalsIgnoreCase(termType);
+    }
 }

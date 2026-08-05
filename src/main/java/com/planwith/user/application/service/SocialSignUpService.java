@@ -25,8 +25,6 @@ import java.util.UUID;
 @Transactional(readOnly = true)
 public class SocialSignUpService implements SocialSignUpUseCase {
 
-    private static final Long DEFAULT_GRADE_ID = 1L;
-
     private final UserRepositoryPort userRepositoryPort;
     private final SocialUserInfoPort socialUserInfoPort;
     private final SocialAccessTokenResolver socialAccessTokenResolver;
@@ -71,7 +69,7 @@ public class SocialSignUpService implements SocialSignUpUseCase {
                 : loginType.name().toLowerCase() + "_" + socialUserInfo.getProviderId() + "@social.local";
 
         User user = User.createSocial(
-                DEFAULT_GRADE_ID,
+                User.DEFAULT_GRADE,
                 email,
                 uniqueNickname,
                 loginType,
@@ -79,7 +77,7 @@ public class SocialSignUpService implements SocialSignUpUseCase {
         );
 
         User saved = userRepositoryPort.save(user);
-        userAgreementPort.saveAgreements(saved.getId(), agreedTermIds);
+        userAgreementPort.saveAgreements(saved.getMemberUuid(), agreedTermIds);
 
         return tokenIssuanceService.issueTokens(saved);
     }

@@ -58,7 +58,8 @@ class SignUpServiceTest {
             User u = invocation.getArgument(0);
             return User.builder()
                     .id(99L)
-                    .gradeId(u.getGradeId())
+                    .memberUuid(u.getMemberUuid())
+                    .grade(u.getGrade())
                     .email(u.getEmail())
                     .password(u.getPassword())
                     .nickname(u.getNickname())
@@ -74,7 +75,8 @@ class SignUpServiceTest {
         verify(userRepositoryPort).save(captor.capture());
         assertThat(captor.getValue().getEmail()).isEqualTo("a@b.com");
         assertThat(captor.getValue().getPassword()).isEqualTo("encoded");
-        verify(userAgreementPort).saveAgreements(99L, List.of(1L, 2L, 3L));
+        assertThat(captor.getValue().getGrade()).isEqualTo(User.DEFAULT_GRADE);
+        verify(userAgreementPort).saveAgreements(captor.getValue().getMemberUuid(), List.of(1L, 2L, 3L));
     }
 
     @Test

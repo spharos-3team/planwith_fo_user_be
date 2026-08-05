@@ -12,6 +12,8 @@ class UserTest {
     void withdraw_anonymizesAndDeletes() {
         User user = User.builder()
                 .id(10L)
+                .memberUuid("uuid-10")
+                .grade(User.DEFAULT_GRADE)
                 .email("user@example.com")
                 .password("encoded")
                 .nickname("닉네임")
@@ -27,6 +29,7 @@ class UserTest {
 
         assertThat(user.isDeleted()).isTrue();
         assertThat(user.getStatus()).isEqualTo(UserStatus.DELETED);
+        assertThat(user.getDeletedAt()).isNotNull();
         assertThat(user.getEmail()).startsWith("deleted_10_").endsWith("@withdrawn.local");
         assertThat(user.getNickname()).isEqualTo("탈퇴회원_10");
         assertThat(user.getPassword()).isNull();
@@ -38,10 +41,12 @@ class UserTest {
     @Test
     @DisplayName("changePassword updates encoded password")
     void changePassword_updatesPassword() {
-        User user = User.createLocal(1L, "a@b.com", "old", "nick", null, null);
+        User user = User.createLocal(User.DEFAULT_GRADE, "a@b.com", "old", "nick", null, null);
 
         user.changePassword("new-encoded");
 
         assertThat(user.getPassword()).isEqualTo("new-encoded");
+        assertThat(user.getMemberUuid()).isNotBlank();
+        assertThat(user.getGrade()).isEqualTo(User.DEFAULT_GRADE);
     }
 }

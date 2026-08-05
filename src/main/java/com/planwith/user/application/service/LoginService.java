@@ -12,6 +12,8 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.LocalDateTime;
+
 @Service
 @RequiredArgsConstructor
 @Transactional(readOnly = true)
@@ -34,6 +36,8 @@ public class LoginService implements LoginUseCase {
             throw new CustomException(ErrorCode.INVALID_CREDENTIALS);
         }
 
-        return tokenIssuanceService.issueTokens(user);
+        user.recordLastLogin(LocalDateTime.now());
+        User saved = userRepositoryPort.save(user);
+        return tokenIssuanceService.issueTokens(saved);
     }
 }

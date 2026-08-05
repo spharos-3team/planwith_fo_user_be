@@ -20,6 +20,7 @@ import java.util.Optional;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.BDDMockito.given;
 import static org.mockito.Mockito.verify;
 
@@ -47,11 +48,13 @@ class LoginServiceTest {
                 .build();
         given(userRepositoryPort.findActiveByEmail("a@b.com")).willReturn(Optional.of(user));
         given(passwordEncoderPort.matches("Passw0rd!", "encoded")).willReturn(true);
-        given(tokenIssuanceService.issueTokens(user)).willReturn(tokens);
+        given(userRepositoryPort.save(any(User.class))).willAnswer(invocation -> invocation.getArgument(0));
+        given(tokenIssuanceService.issueTokens(any(User.class))).willReturn(tokens);
 
         TokenPair result = loginService.login("a@b.com", "Passw0rd!");
         assertThat(result.getAccessToken()).isEqualTo("a");
-        verify(tokenIssuanceService).issueTokens(user);
+        verify(userRepositoryPort).save(any(User.class));
+        verify(tokenIssuanceService).issueTokens(any(User.class));
     }
 
     @Test

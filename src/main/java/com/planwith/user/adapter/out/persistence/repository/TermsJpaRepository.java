@@ -7,7 +7,7 @@ import java.util.List;
 
 public interface TermsJpaRepository extends JpaRepository<TermsJpaEntity, Long> {
 
-    List<TermsJpaEntity> findAllByActiveTrueOrderByDisplayOrderAsc();
+    List<TermsJpaEntity> findAllByActiveTrueOrderByIdAsc();
 
-    List<TermsJpaEntity> findAllByActiveTrueAndRequiredTrue();
+    List<TermsJpaEntity> findAllByActiveTrueAndTermType(String termType);
 }

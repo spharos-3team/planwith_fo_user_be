@@ -22,8 +22,6 @@ import java.util.Set;
 @Transactional(readOnly = true)
 public class SignUpService implements SignUpUseCase {
 
-    private static final Long DEFAULT_GRADE_ID = 1L;
-
     private final UserRepositoryPort userRepositoryPort;
     private final EmailVerificationPort emailVerificationPort;
     private final PasswordEncoderPort passwordEncoderPort;
@@ -49,7 +47,7 @@ public class SignUpService implements SignUpUseCase {
         validateRequiredAgreed(agreedTermIds);
 
         User user = User.createLocal(
-                DEFAULT_GRADE_ID,
+                User.DEFAULT_GRADE,
                 email,
                 passwordEncoderPort.encode(password),
                 nickname,
@@ -58,7 +56,7 @@ public class SignUpService implements SignUpUseCase {
         );
 
         User saved = userRepositoryPort.save(user);
-        userAgreementPort.saveAgreements(saved.getId(), agreedTermIds);
+        userAgreementPort.saveAgreements(saved.getMemberUuid(), agreedTermIds);
     }
 
     private void validateRequiredAgreed(List<Long> agreedTermIds) {

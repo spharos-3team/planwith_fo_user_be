@@ -4,5 +4,5 @@ import java.util.List;
 
 public interface UserAgreementPort {
 
-    void saveAgreements(Long userId, List<Long> termsIds);
+    void saveAgreements(String memberUuid, List<Long> termsIds);
 }

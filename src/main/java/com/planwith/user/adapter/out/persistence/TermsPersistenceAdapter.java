@@ -17,14 +17,14 @@ public class TermsPersistenceAdapter implements TermsPort {
 
     @Override
     public List<Terms> findAllActive() {
-        return termsJpaRepository.findAllByActiveTrueOrderByDisplayOrderAsc().stream()
+        return termsJpaRepository.findAllByActiveTrueOrderByIdAsc().stream()
                 .map(this::toDomain)
                 .toList();
     }
 
     @Override
     public List<Long> findRequiredActiveIds() {
-        return termsJpaRepository.findAllByActiveTrueAndRequiredTrue().stream()
+        return termsJpaRepository.findAllByActiveTrueAndTermType(TermsJpaEntity.TERM_TYPE_REQUIRED).stream()
                 .map(TermsJpaEntity::getId)
                 .toList();
     }
@@ -33,9 +33,9 @@ public class TermsPersistenceAdapter implements TermsPort {
         return Terms.builder()
                 .id(entity.getId())
                 .title(entity.getTitle())
-                .contentUrl(entity.getContentUrl())
+                .contentUrl(entity.getContent())
                 .required(entity.isRequired())
-                .displayOrder(entity.getDisplayOrder())
+                .displayOrder(entity.getId() != null ? entity.getId().intValue() : 0)
                 .active(entity.isActive())
                 .build();
     }

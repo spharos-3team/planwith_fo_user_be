@@ -5,13 +5,16 @@ import lombok.Builder;
 import lombok.Getter;
 
 import java.time.LocalDateTime;
+import java.util.UUID;
 
 @Getter
 public class User {
 
+    public static final String DEFAULT_GRADE = "일반회원";
+
     private Long id;
-    private Long gradeId;
-    private Long followId;
+    private String memberUuid;
+    private String grade;
     private String email;
     private String password;
     private String nickname;
@@ -21,16 +24,19 @@ public class User {
     private String providerId;
     private UserStatus status;
     private String role;
+    private LocalDateTime lastLoginAt;
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
+    private LocalDateTime deletedAt;
 
     @Builder(access = AccessLevel.PUBLIC)
-    public User(Long id, Long gradeId, Long followId, String email, String password, String nickname,
+    public User(Long id, String memberUuid, String grade, String email, String password, String nickname,
                 String profileImage, String introduction, LoginType loginType, String providerId,
-                UserStatus status, String role, LocalDateTime createdAt, LocalDateTime updatedAt) {
+                UserStatus status, String role, LocalDateTime lastLoginAt,
+                LocalDateTime createdAt, LocalDateTime updatedAt, LocalDateTime deletedAt) {
         this.id = id;
-        this.gradeId = gradeId;
-        this.followId = followId;
+        this.memberUuid = memberUuid;
+        this.grade = (grade == null || grade.isBlank()) ? DEFAULT_GRADE : grade;
         this.email = email;
         this.password = password;
         this.nickname = nickname;
@@ -40,14 +46,17 @@ public class User {
         this.providerId = providerId;
         this.status = status;
         this.role = (role == null) ? "USER" : role;
+        this.lastLoginAt = lastLoginAt;
         this.createdAt = createdAt;
         this.updatedAt = updatedAt;
+        this.deletedAt = deletedAt;
     }
 
-    public static User createLocal(Long gradeId, String email, String encodedPassword, String nickname,
+    public static User createLocal(String grade, String email, String encodedPassword, String nickname,
                                    String profileImage, String introduction) {
         return User.builder()
-                .gradeId(gradeId)
+                .memberUuid(UUID.randomUUID().toString())
+                .grade(grade)
                 .email(email)
                 .password(encodedPassword)
                 .nickname(nickname)
@@ -59,10 +68,11 @@ public class User {
                 .build();
     }
 
-    public static User createSocial(Long gradeId, String email, String nickname,
+    public static User createSocial(String grade, String email, String nickname,
                                     LoginType loginType, String providerId) {
         return User.builder()
-                .gradeId(gradeId)
+                .memberUuid(UUID.randomUUID().toString())
+                .grade(grade)
                 .email(email)
                 .nickname(nickname)
                 .loginType(loginType)
@@ -76,11 +86,17 @@ public class User {
         this.password = encodedPassword;
     }
 
+    public void recordLastLogin(LocalDateTime at) {
+        this.lastLoginAt = at;
+    }
+
     /**
      * Soft withdraw with anonymization so unique email/nickname constraints are released immediately.
+     * Sets deleted_at and status DELETED; auth/profile fields are cleared for persistence.
      */
     public void withdraw() {
         this.status = UserStatus.DELETED;
+        this.deletedAt = LocalDateTime.now();
         this.email = "deleted_" + this.id + "_" + System.currentTimeMillis() + "@withdrawn.local";
         this.nickname = "탈퇴회원_" + this.id;
         this.password = null;

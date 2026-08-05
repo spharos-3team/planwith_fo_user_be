@@ -5,11 +5,14 @@ import com.planwith.user.application.port.in.SocialLoginUseCase;
 import com.planwith.user.application.port.out.SocialUserInfoPort;
 import com.planwith.user.application.port.out.UserRepositoryPort;
 import com.planwith.user.domain.user.LoginType;
+import com.planwith.user.domain.user.User;
 import com.planwith.user.global.exception.CustomException;
 import com.planwith.user.global.exception.ErrorCode;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+
+import java.time.LocalDateTime;
 
 @Service
 @RequiredArgsConstructor
@@ -37,10 +40,14 @@ public class SocialLoginService implements SocialLoginUseCase {
 
         return userRepositoryPort
                 .findActiveByLoginTypeAndProviderId(loginType, socialUserInfo.getProviderId())
-                .map(user -> SocialAuthResult.builder()
-                        .needsSignup(false)
-                        .tokens(tokenIssuanceService.issueTokens(user))
-                        .build())
+                .map(user -> {
+                    user.recordLastLogin(LocalDateTime.now());
+                    User saved = userRepositoryPort.save(user);
+                    return SocialAuthResult.builder()
+                            .needsSignup(false)
+                            .tokens(tokenIssuanceService.issueTokens(saved))
+                            .build();
+                })
                 .orElseGet(() -> SocialAuthResult.builder()
                         .needsSignup(true)
                         .provider(provider.toUpperCase())
