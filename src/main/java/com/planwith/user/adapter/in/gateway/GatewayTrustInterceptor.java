@@ -25,7 +25,12 @@ public class GatewayTrustInterceptor implements HandlerInterceptor {
             "/oauth2/jwks",
             "/actuator/health",
             "/actuator/health/**",
-            "/actuator/info"
+            "/actuator/info",
+            // local API docs (Try it out should target Gateway; UI itself is BE-local)
+            "/swagger-ui.html",
+            "/swagger-ui/**",
+            "/v3/api-docs",
+            "/v3/api-docs/**"
     );
 
     private final AppProperties appProperties;

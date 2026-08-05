@@ -23,6 +23,16 @@ email:
   verification:
     mock-mode: ${EMAIL_MOCK_MODE:true}
 
+springdoc:
+  api-docs:
+    enabled: true
+  swagger-ui:
+    enabled: true
+    path: /swagger-ui.html
+    tags-sorter: alpha
+    operations-sorter: alpha
+  server-url: ${SPRINGDOC_SERVER_URL:http://localhost:8000}
+
 aws:
   s3:
     enabled: ${AWS_S3_ENABLED:false}

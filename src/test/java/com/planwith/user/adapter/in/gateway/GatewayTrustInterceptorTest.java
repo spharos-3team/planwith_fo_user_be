@@ -34,6 +34,15 @@ class GatewayTrustInterceptorTest {
     }
 
     @Test
+    @DisplayName("allows swagger UI without gateway token")
+    void swagger_exempt() {
+        MockHttpServletRequest request = new MockHttpServletRequest("GET", "/swagger-ui/index.html");
+        boolean allowed = interceptor.preHandle(request, new MockHttpServletResponse(), new Object());
+        assertThat(allowed).isTrue();
+        assertThat(request.getAttribute(GatewayTrustInterceptor.ATTR_TRUSTED)).isEqualTo(Boolean.FALSE);
+    }
+
+    @Test
     @DisplayName("rejects missing gateway internal token")
     void missingToken_rejected() {
         MockHttpServletRequest request = new MockHttpServletRequest("GET", "/api/v1/auth/login");

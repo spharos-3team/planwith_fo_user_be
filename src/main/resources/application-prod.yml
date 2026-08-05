@@ -37,6 +37,12 @@ email:
   verification:
     mock-mode: false
 
+springdoc:
+  api-docs:
+    enabled: false
+  swagger-ui:
+    enabled: false
+
 aws:
   s3:
     enabled: true
