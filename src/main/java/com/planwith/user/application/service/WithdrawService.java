@@ -31,11 +31,14 @@ public class WithdrawService implements WithdrawUseCase {
         }
 
         if (user.isLocalAccount()) {
-            if (!passwordEncoderPort.matches(password, user.getPassword())) {
+            if (password == null || password.isBlank()
+                    || user.getPassword() == null
+                    || !passwordEncoderPort.matches(password, user.getPassword())) {
                 throw new CustomException(ErrorCode.INVALID_CREDENTIALS);
             }
         }
 
+        // Soft delete only: status -> DELETED, row kept with anonymized PII.
         user.withdraw();
         userRepositoryPort.save(user);
         refreshTokenSessionPort.deleteByUserId(String.valueOf(userId));

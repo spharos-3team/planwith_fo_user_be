@@ -10,5 +10,7 @@ public interface MemberJpaRepository extends JpaRepository<MemberJpaEntity, Long
 
     Optional<MemberJpaEntity> findByMemberIdAndStatusNot(Long memberId, UserStatus status);
 
+    Optional<MemberJpaEntity> findByMemberIdAndStatus(Long memberId, UserStatus status);
+
     Optional<MemberJpaEntity> findByMemberUuid(String memberUuid);
 }

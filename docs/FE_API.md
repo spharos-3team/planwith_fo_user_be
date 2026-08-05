@@ -177,13 +177,21 @@ POST /api/v1/auth/logout-all
 Authorization: Bearer <accessToken>
 ```
 
-### 탈퇴 (인증 필요)
+### 탈퇴 (인증 필요, soft delete)
 
 ```http
 DELETE /api/v1/auth/withdraw
 Authorization: Bearer <accessToken>
 { "password": "..." }
 ```
+
+- DB row는 **삭제하지 않음**. `member.status`만 `DELETED`로 바꾸고 `deleted_at` 설정 + 이메일/닉네임 등 개인정보 익명화
+- 회원 상태: `ACTIVE` | `SUSPENDED` | `DELETED`  
+  - 로그인/프로필/팔로우는 `ACTIVE`만 가능  
+  - `SUSPENDED`는 정지, `DELETED`는 탈퇴
+- 로컬 가입: `password` 필수 (본인 확인)
+- 소셜 가입: `password` 생략 가능
+- 성공 시 refresh 세션 전부 폐기. FE는 accessToken도 폐기하고 로그인 화면으로
 
 ### 비밀번호 재설정
 

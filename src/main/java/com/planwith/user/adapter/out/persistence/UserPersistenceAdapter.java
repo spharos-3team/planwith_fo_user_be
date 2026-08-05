@@ -69,7 +69,7 @@ public class UserPersistenceAdapter implements UserRepositoryPort {
     @Override
     public Optional<User> findActiveByMemberUuid(String memberUuid) {
         return memberJpaRepository.findByMemberUuid(memberUuid)
-                .filter(member -> member.getStatus() != UserStatus.DELETED)
+                .filter(member -> member.getStatus() == UserStatus.ACTIVE)
                 .flatMap(this::assemble);
     }
 
@@ -106,7 +106,7 @@ public class UserPersistenceAdapter implements UserRepositoryPort {
     }
 
     private Optional<MemberJpaEntity> loadActiveMember(Long memberId) {
-        return memberJpaRepository.findByMemberIdAndStatusNot(memberId, UserStatus.DELETED);
+        return memberJpaRepository.findByMemberIdAndStatus(memberId, UserStatus.ACTIVE);
     }
 
     private Optional<User> assemble(MemberJpaEntity member) {

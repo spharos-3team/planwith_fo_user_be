@@ -117,6 +117,14 @@ public class User {
         this.providerId = null;
     }
 
+    public boolean isActive() {
+        return this.status == UserStatus.ACTIVE;
+    }
+
+    public boolean isSuspended() {
+        return this.status == UserStatus.SUSPENDED;
+    }
+
     public boolean isDeleted() {
         return this.status == UserStatus.DELETED;
     }

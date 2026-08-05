@@ -1,6 +1,5 @@
 package com.planwith.user.adapter.in.web.auth.dto;
 
-import jakarta.validation.constraints.NotBlank;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
@@ -8,6 +7,8 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 public class WithdrawRequest {
 
-    @NotBlank(message = "비밀번호를 입력해주세요.")
+    /**
+     * Required for LOCAL accounts. Social accounts may omit or send blank.
+     */
     private String password;
 }
