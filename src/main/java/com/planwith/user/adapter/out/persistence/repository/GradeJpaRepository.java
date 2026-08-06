@@ -10,7 +10,5 @@ public interface GradeJpaRepository extends JpaRepository<GradeJpaEntity, Long> 
 
     Optional<GradeJpaEntity> findByGradeCode(String gradeCode);
 
-    List<GradeJpaEntity> findAllByOrderBySortOrderAsc();
-
-    boolean existsByGradeCode(String gradeCode);
+    List<GradeJpaEntity> findAllByOrderByGradeLevelAsc();
 }

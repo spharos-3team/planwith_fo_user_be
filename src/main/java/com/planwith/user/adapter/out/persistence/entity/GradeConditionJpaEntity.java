@@ -25,17 +25,31 @@ public class GradeConditionJpaEntity {
     private Long gradeId;
 
     @Enumerated(EnumType.STRING)
-    @Column(name = "metric_type", nullable = false, length = 20)
+    @Column(name = "metric_type", nullable = false, length = 50)
     private GradeMetricType metricType;
+
+    @Column(name = "condition_name", nullable = false, length = 100)
+    private String conditionName;
 
     @Column(name = "threshold_value", nullable = false)
     private Long thresholdValue;
 
+    @Column(name = "sort_order", nullable = false)
+    private Integer sortOrder;
+
+    @Lob
+    @Column(columnDefinition = "TEXT")
+    private String description;
+
     @Builder
-    public GradeConditionJpaEntity(Long conditionId, Long gradeId, GradeMetricType metricType, Long thresholdValue) {
+    public GradeConditionJpaEntity(Long conditionId, Long gradeId, GradeMetricType metricType, String conditionName,
+                                   Long thresholdValue, Integer sortOrder, String description) {
         this.conditionId = conditionId;
         this.gradeId = gradeId;
         this.metricType = metricType;
+        this.conditionName = conditionName;
         this.thresholdValue = thresholdValue;
+        this.sortOrder = sortOrder;
+        this.description = description;
     }
 }

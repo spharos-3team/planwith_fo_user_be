@@ -374,7 +374,10 @@ GET /api/v1/members/{memberUuid}/following
 GET /api/v1/grades
 ```
 
-각 항목: `gradeCode`, `nameKo`, `sortOrder`, `monthlyTokenAmount`, `conditions[]` (`metricType`=`STORY|FOLLOWER|LIKE`, `threshold`), `benefits[]` (`benefitCode`, `description`).
+각 항목: `gradeCode`, `gradeName`, `gradeLevel`, `description`,  
+`conditions[]` (`metricType`=`STORY|FOLLOWER|LIKE`, `conditionName`, `thresholdValue`, `sortOrder`, `description`),  
+`benefits[]` (`benefitCode`, `benefitName`, `benefitValue`, `description`, `sortOrder`).  
+월간 토큰 수량은 `benefits` 중 `benefitCode=MONTHLY_TOKEN`의 `benefitValue`로 전달합니다.
 
 ### 내 등급 / 보상 내역 (인증 필요)
 
@@ -384,7 +387,9 @@ GET /api/v1/members/me/grade/rewards
 GET /api/v1/members/{memberUuid}/grade
 ```
 
-`me/grade` 응답에 현재 등급, 지표(`storyCount`/`followerCount`/`likeCount`), 혜택 목록 포함.
+`me/grade` 응답: `gradeUuid`, `gradeCode`, `gradeName`, `gradeLevel`, `gradeStatus`, `gradeAssignedAt`, `lastEvaluatedAt`,  
+`metrics[]` (EAV: `metricType`, `currentValue`, `sourceService`, `sourceVersion`, `synchronizedAt`), `benefits[]`.  
+보상 내역: `rewardMonth`, `tokenAmount`, `rewardStatus`, `createdAt`.
 
 ### 승급 평가 (내부 연동)
 
@@ -411,7 +416,7 @@ POST /api/v1/internal/grades/rewards/monthly
 { "periodYm": "2026-08" }
 ```
 
-`periodYm` 생략 시 현재 월. 동일 member+period는 skip (idempotent).
+`periodYm` 생략 시 현재 월(= `reward_month`). 동일 member+rewardMonth는 skip (idempotent).
 
 ---
 

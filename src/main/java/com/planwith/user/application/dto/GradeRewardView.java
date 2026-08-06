@@ -9,10 +9,10 @@ import java.time.LocalDateTime;
 @Builder
 public class GradeRewardView {
 
-    private final String rewardUuid;
+    private final String memberUuid;
     private final String gradeCode;
-    private final String rewardType;
-    private final int amount;
-    private final String periodYm;
-    private final LocalDateTime grantedAt;
+    private final String rewardMonth;
+    private final int tokenAmount;
+    private final String rewardStatus;
+    private final LocalDateTime createdAt;
 }

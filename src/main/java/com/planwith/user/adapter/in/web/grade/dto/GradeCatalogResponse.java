@@ -11,30 +11,57 @@ import java.util.List;
 public class GradeCatalogResponse {
 
     private final String gradeCode;
-    private final String nameKo;
-    private final int sortOrder;
-    private final int monthlyTokenAmount;
+    private final String gradeName;
+    private final int gradeLevel;
+    private final String description;
     private final List<ConditionResponse> conditions;
     private final List<BenefitResponse> benefits;
 
     public static GradeCatalogResponse from(GradeCatalogItem item) {
         return GradeCatalogResponse.builder()
                 .gradeCode(item.getGradeCode())
-                .nameKo(item.getNameKo())
-                .sortOrder(item.getSortOrder())
-                .monthlyTokenAmount(item.getMonthlyTokenAmount())
+                .gradeName(item.getGradeName())
+                .gradeLevel(item.getGradeLevel())
+                .description(item.getDescription())
                 .conditions(item.getConditions().stream()
-                        .map(c -> new ConditionResponse(c.getMetricType(), c.getThreshold()))
+                        .map(c -> new ConditionResponse(
+                                c.getMetricType(),
+                                c.getConditionName(),
+                                c.getThresholdValue(),
+                                c.getSortOrder(),
+                                c.getDescription()
+                        ))
                         .toList())
                 .benefits(item.getBenefits().stream()
-                        .map(b -> new BenefitResponse(b.getBenefitCode(), b.getDescription()))
+                        .map(BenefitResponse::from)
                         .toList())
                 .build();
     }
 
-    public record ConditionResponse(String metricType, long threshold) {
+    public record ConditionResponse(
+            String metricType,
+            String conditionName,
+            long thresholdValue,
+            int sortOrder,
+            String description
+    ) {
     }
 
-    public record BenefitResponse(String benefitCode, String description) {
+    public record BenefitResponse(
+            String benefitCode,
+            String benefitName,
+            String benefitValue,
+            String description,
+            int sortOrder
+    ) {
+        public static BenefitResponse from(GradeCatalogItem.Benefit b) {
+            return new BenefitResponse(
+                    b.getBenefitCode(),
+                    b.getBenefitName(),
+                    b.getBenefitValue(),
+                    b.getDescription(),
+                    b.getSortOrder()
+            );
+        }
     }
 }

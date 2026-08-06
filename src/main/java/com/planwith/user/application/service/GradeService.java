@@ -1,5 +1,6 @@
 package com.planwith.user.application.service;
 
+import com.planwith.user.adapter.out.persistence.GradePersistenceAdapter;
 import com.planwith.user.application.dto.GradeCatalogItem;
 import com.planwith.user.application.dto.GradeEvaluateResult;
 import com.planwith.user.application.dto.GradeRewardView;
@@ -13,6 +14,7 @@ import com.planwith.user.application.port.out.FollowPort;
 import com.planwith.user.application.port.out.MemberGradePort;
 import com.planwith.user.application.port.out.UserRepositoryPort;
 import com.planwith.user.domain.grade.GradeEvaluationPolicy;
+import com.planwith.user.domain.grade.GradeMetricType;
 import com.planwith.user.domain.grade.MemberGradeCode;
 import com.planwith.user.domain.user.User;
 import com.planwith.user.global.exception.CustomException;
@@ -49,7 +51,9 @@ public class GradeService implements
 
     @Override
     public MemberGradeView getMyGrade(Long memberId) {
-        return memberGradePort.getMemberGrade(memberId);
+        User user = userRepositoryPort.findActiveById(memberId)
+                .orElseThrow(() -> new CustomException(ErrorCode.USER_NOT_FOUND));
+        return memberGradePort.getMemberGradeByUuid(user.getMemberUuid());
     }
 
     @Override
@@ -71,17 +75,23 @@ public class GradeService implements
                 .orElseThrow(() -> new CustomException(ErrorCode.USER_NOT_FOUND));
 
         long followerCount = followPort.countFollowers(user.getMemberUuid());
-        MemberGradeCode previous = memberGradePort.getCurrentGradeCode(user.getId());
+        MemberGradeCode previous = memberGradePort.getCurrentGradeCode(user.getMemberUuid());
 
-        memberGradePort.saveMetrics(user.getId(), user.getMemberUuid(), storyCount, followerCount, likeCount);
+        memberGradePort.upsertMetric(
+                user.getMemberUuid(), GradeMetricType.STORY.name(), storyCount, GradePersistenceAdapter.SOURCE_CONTENT);
+        memberGradePort.upsertMetric(
+                user.getMemberUuid(), GradeMetricType.LIKE.name(), likeCount, GradePersistenceAdapter.SOURCE_CONTENT);
+        memberGradePort.upsertMetric(
+                user.getMemberUuid(), GradeMetricType.FOLLOWER.name(), followerCount, GradePersistenceAdapter.SOURCE_FO_USER);
 
         MemberGradeCode next = GradeEvaluationPolicy.highestSatisfied(
                 storyCount, followerCount, likeCount, previous);
         if (next.sortOrder() > previous.sortOrder()) {
-            memberGradePort.updateMemberGrade(user.getId(), user.getMemberUuid(), next);
+            memberGradePort.updateMemberGrade(user.getMemberUuid(), next);
         }
+        memberGradePort.markEvaluated(user.getMemberUuid());
 
-        MemberGradeView view = memberGradePort.getMemberGrade(user.getId());
+        MemberGradeView view = memberGradePort.getMemberGradeByUuid(user.getMemberUuid());
         return GradeEvaluateResult.builder()
                 .memberUuid(user.getMemberUuid())
                 .previousGradeCode(previous.name())
@@ -97,15 +107,11 @@ public class GradeService implements
         String period = resolvePeriod(periodYm);
         int created = 0;
         for (MemberGradePort.MemberGradeAssignment assignment : memberGradePort.listAssignmentsForActiveMembers()) {
-            if (memberGradePort.rewardExists(assignment.memberId(), period)) {
+            if (memberGradePort.rewardExists(assignment.memberUuid(), period)) {
                 continue;
             }
-            memberGradePort.saveMonthlyReward(
-                    assignment.memberId(),
-                    assignment.gradeCode(),
-                    assignment.gradeCode().monthlyTokenAmount(),
-                    period
-            );
+            int tokens = memberGradePort.monthlyTokenAmount(assignment.gradeCode());
+            memberGradePort.saveMonthlyReward(assignment.memberUuid(), assignment.gradeCode(), tokens, period);
             created++;
         }
         return created;
@@ -113,18 +119,24 @@ public class GradeService implements
 
     @Override
     public List<GradeRewardView> listMyRewards(Long memberId) {
-        return memberGradePort.listRewards(memberId);
+        User user = userRepositoryPort.findActiveById(memberId)
+                .orElseThrow(() -> new CustomException(ErrorCode.USER_NOT_FOUND));
+        return memberGradePort.listRewards(user.getMemberUuid());
     }
 
     @Transactional
     public void syncFollowerMetric(String memberUuid) {
-        User user = userRepositoryPort.findActiveByMemberUuid(memberUuid)
-                .orElse(null);
+        User user = userRepositoryPort.findActiveByMemberUuid(memberUuid).orElse(null);
         if (user == null) {
             return;
         }
         long followers = followPort.countFollowers(memberUuid);
-        memberGradePort.updateFollowerCount(user.getId(), user.getMemberUuid(), followers);
+        memberGradePort.upsertMetric(
+                user.getMemberUuid(),
+                GradeMetricType.FOLLOWER.name(),
+                followers,
+                GradePersistenceAdapter.SOURCE_FO_USER
+        );
     }
 
     private static String resolvePeriod(String periodYm) {

@@ -25,17 +25,31 @@ public class GradeBenefitJpaEntity {
     private Long gradeId;
 
     @Enumerated(EnumType.STRING)
-    @Column(name = "benefit_code", nullable = false, length = 40)
+    @Column(name = "benefit_code", nullable = false, length = 50)
     private GradeBenefitCode benefitCode;
 
-    @Column(nullable = false, length = 200)
+    @Column(name = "benefit_name", nullable = false, length = 100)
+    private String benefitName;
+
+    @Column(name = "benefit_value", length = 200)
+    private String benefitValue;
+
+    @Lob
+    @Column(columnDefinition = "TEXT")
     private String description;
 
+    @Column(name = "sort_order", nullable = false)
+    private Integer sortOrder;
+
     @Builder
-    public GradeBenefitJpaEntity(Long benefitId, Long gradeId, GradeBenefitCode benefitCode, String description) {
+    public GradeBenefitJpaEntity(Long benefitId, Long gradeId, GradeBenefitCode benefitCode, String benefitName,
+                                 String benefitValue, String description, Integer sortOrder) {
         this.benefitId = benefitId;
         this.gradeId = gradeId;
         this.benefitCode = benefitCode;
+        this.benefitName = benefitName;
+        this.benefitValue = benefitValue;
         this.description = description;
+        this.sortOrder = sortOrder;
     }
 }

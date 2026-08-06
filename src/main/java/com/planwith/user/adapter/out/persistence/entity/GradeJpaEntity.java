@@ -20,21 +20,22 @@ public class GradeJpaEntity {
     @Column(name = "grade_code", nullable = false, unique = true, length = 30)
     private String gradeCode;
 
-    @Column(name = "name_ko", nullable = false, length = 50)
-    private String nameKo;
+    @Column(name = "grade_name", nullable = false, length = 50)
+    private String gradeName;
 
-    @Column(name = "sort_order", nullable = false, unique = true)
-    private Integer sortOrder;
+    @Column(name = "grade_level", nullable = false, unique = true)
+    private Integer gradeLevel;
 
-    @Column(name = "monthly_token_amount", nullable = false)
-    private Integer monthlyTokenAmount;
+    @Lob
+    @Column(columnDefinition = "TEXT")
+    private String description;
 
     @Builder
-    public GradeJpaEntity(Long gradeId, String gradeCode, String nameKo, Integer sortOrder, Integer monthlyTokenAmount) {
+    public GradeJpaEntity(Long gradeId, String gradeCode, String gradeName, Integer gradeLevel, String description) {
         this.gradeId = gradeId;
         this.gradeCode = gradeCode;
-        this.nameKo = nameKo;
-        this.sortOrder = sortOrder;
-        this.monthlyTokenAmount = monthlyTokenAmount;
+        this.gradeName = gradeName;
+        this.gradeLevel = gradeLevel;
+        this.description = description;
     }
 }

@@ -1,6 +1,6 @@
 package com.planwith.user.adapter.out.persistence.entity;
 
-import com.planwith.user.domain.grade.GradeRewardType;
+import com.planwith.user.domain.grade.GradeRewardStatus;
 import jakarta.persistence.*;
 import lombok.AccessLevel;
 import lombok.Builder;
@@ -12,10 +12,7 @@ import java.time.LocalDateTime;
 @Entity
 @Table(
         name = "grade_reward_history",
-        uniqueConstraints = {
-                @UniqueConstraint(name = "uk_grade_reward_uuid", columnNames = "reward_uuid"),
-                @UniqueConstraint(name = "uk_grade_reward_period", columnNames = {"member_id", "reward_type", "period_ym"})
-        }
+        uniqueConstraints = @UniqueConstraint(name = "uk_grade_reward_month", columnNames = {"member_uuid", "reward_month"})
 )
 @Getter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
@@ -26,39 +23,34 @@ public class GradeRewardHistoryJpaEntity {
     @Column(name = "reward_id")
     private Long rewardId;
 
-    @Column(name = "reward_uuid", nullable = false, length = 36)
-    private String rewardUuid;
-
-    @Column(name = "member_id", nullable = false)
-    private Long memberId;
+    @Column(name = "member_uuid", nullable = false, length = 36)
+    private String memberUuid;
 
     @Column(name = "grade_id", nullable = false)
     private Long gradeId;
 
+    @Column(name = "reward_month", nullable = false, length = 7)
+    private String rewardMonth;
+
+    @Column(name = "token_amount", nullable = false)
+    private Integer tokenAmount;
+
     @Enumerated(EnumType.STRING)
-    @Column(name = "reward_type", nullable = false, length = 40)
-    private GradeRewardType rewardType;
+    @Column(name = "reward_status", nullable = false, length = 20)
+    private GradeRewardStatus rewardStatus;
 
-    @Column(nullable = false)
-    private Integer amount;
-
-    @Column(name = "period_ym", nullable = false, length = 7)
-    private String periodYm;
-
-    @Column(name = "granted_at", nullable = false)
-    private LocalDateTime grantedAt;
+    @Column(name = "created_at", nullable = false)
+    private LocalDateTime createdAt;
 
     @Builder
-    public GradeRewardHistoryJpaEntity(Long rewardId, String rewardUuid, Long memberId, Long gradeId,
-                                       GradeRewardType rewardType, Integer amount, String periodYm,
-                                       LocalDateTime grantedAt) {
+    public GradeRewardHistoryJpaEntity(Long rewardId, String memberUuid, Long gradeId, String rewardMonth,
+                                       Integer tokenAmount, GradeRewardStatus rewardStatus, LocalDateTime createdAt) {
         this.rewardId = rewardId;
-        this.rewardUuid = rewardUuid;
-        this.memberId = memberId;
+        this.memberUuid = memberUuid;
         this.gradeId = gradeId;
-        this.rewardType = rewardType;
-        this.amount = amount;
-        this.periodYm = periodYm;
-        this.grantedAt = grantedAt;
+        this.rewardMonth = rewardMonth;
+        this.tokenAmount = tokenAmount;
+        this.rewardStatus = rewardStatus;
+        this.createdAt = createdAt;
     }
 }

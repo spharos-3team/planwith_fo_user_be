@@ -12,39 +12,47 @@ import java.util.List;
 public class MemberGradeResponse {
 
     private final String memberUuid;
+    private final String gradeUuid;
     private final String gradeCode;
-    private final String nameKo;
-    private final int sortOrder;
-    private final int monthlyTokenAmount;
-    private final LocalDateTime gradedAt;
-    private final MetricsResponse metrics;
+    private final String gradeName;
+    private final int gradeLevel;
+    private final String gradeStatus;
+    private final LocalDateTime gradeAssignedAt;
+    private final LocalDateTime lastEvaluatedAt;
+    private final List<MetricResponse> metrics;
     private final List<GradeCatalogResponse.BenefitResponse> benefits;
 
     public static MemberGradeResponse from(MemberGradeView view) {
         return MemberGradeResponse.builder()
                 .memberUuid(view.getMemberUuid())
+                .gradeUuid(view.getGradeUuid())
                 .gradeCode(view.getGradeCode())
-                .nameKo(view.getNameKo())
-                .sortOrder(view.getSortOrder())
-                .monthlyTokenAmount(view.getMonthlyTokenAmount())
-                .gradedAt(view.getGradedAt())
-                .metrics(new MetricsResponse(
-                        view.getMetrics().getStoryCount(),
-                        view.getMetrics().getFollowerCount(),
-                        view.getMetrics().getLikeCount(),
-                        view.getMetrics().getMetricsUpdatedAt()
-                ))
+                .gradeName(view.getGradeName())
+                .gradeLevel(view.getGradeLevel())
+                .gradeStatus(view.getGradeStatus())
+                .gradeAssignedAt(view.getGradeAssignedAt())
+                .lastEvaluatedAt(view.getLastEvaluatedAt())
+                .metrics(view.getMetrics().stream()
+                        .map(m -> new MetricResponse(
+                                m.getMetricType(),
+                                m.getCurrentValue(),
+                                m.getSourceService(),
+                                m.getSourceVersion(),
+                                m.getSynchronizedAt()
+                        ))
+                        .toList())
                 .benefits(view.getBenefits().stream()
-                        .map(b -> new GradeCatalogResponse.BenefitResponse(b.getBenefitCode(), b.getDescription()))
+                        .map(GradeCatalogResponse.BenefitResponse::from)
                         .toList())
                 .build();
     }
 
-    public record MetricsResponse(
-            long storyCount,
-            long followerCount,
-            long likeCount,
-            LocalDateTime metricsUpdatedAt
+    public record MetricResponse(
+            String metricType,
+            long currentValue,
+            String sourceService,
+            long sourceVersion,
+            LocalDateTime synchronizedAt
     ) {
     }
 }

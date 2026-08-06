@@ -16,28 +16,30 @@ public interface MemberGradePort {
 
     void initializeMember(Long memberId, String memberUuid);
 
-    MemberGradeView getMemberGrade(Long memberId);
-
     MemberGradeView getMemberGradeByUuid(String memberUuid);
 
-    MemberGradeCode getCurrentGradeCode(Long memberId);
+    MemberGradeCode getCurrentGradeCode(String memberUuid);
 
-    void saveMetrics(Long memberId, String memberUuid, long storyCount, long followerCount, long likeCount);
+    void upsertMetric(String memberUuid, String metricType, long value, String sourceService);
 
-    void updateFollowerCount(Long memberId, String memberUuid, long followerCount);
+    long getMetricValue(String memberUuid, String metricType);
 
-    void updateMemberGrade(Long memberId, String memberUuid, MemberGradeCode gradeCode);
+    void updateMemberGrade(String memberUuid, MemberGradeCode gradeCode);
+
+    void markEvaluated(String memberUuid);
 
     void mirrorProfileGrade(Long memberId, MemberGradeCode gradeCode);
 
-    boolean rewardExists(Long memberId, String periodYm);
+    boolean rewardExists(String memberUuid, String rewardMonth);
 
-    void saveMonthlyReward(Long memberId, MemberGradeCode gradeCode, int amount, String periodYm);
+    void saveMonthlyReward(String memberUuid, MemberGradeCode gradeCode, int tokenAmount, String rewardMonth);
 
-    List<GradeRewardView> listRewards(Long memberId);
+    int monthlyTokenAmount(MemberGradeCode gradeCode);
+
+    List<GradeRewardView> listRewards(String memberUuid);
 
     List<MemberGradeAssignment> listAssignmentsForActiveMembers();
 
-    record MemberGradeAssignment(Long memberId, String memberUuid, MemberGradeCode gradeCode) {
+    record MemberGradeAssignment(String memberUuid, MemberGradeCode gradeCode) {
     }
 }

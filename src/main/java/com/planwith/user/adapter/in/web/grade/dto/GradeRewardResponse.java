@@ -10,21 +10,21 @@ import java.time.LocalDateTime;
 @Builder
 public class GradeRewardResponse {
 
-    private final String rewardUuid;
+    private final String memberUuid;
     private final String gradeCode;
-    private final String rewardType;
-    private final int amount;
-    private final String periodYm;
-    private final LocalDateTime grantedAt;
+    private final String rewardMonth;
+    private final int tokenAmount;
+    private final String rewardStatus;
+    private final LocalDateTime createdAt;
 
     public static GradeRewardResponse from(GradeRewardView view) {
         return GradeRewardResponse.builder()
-                .rewardUuid(view.getRewardUuid())
+                .memberUuid(view.getMemberUuid())
                 .gradeCode(view.getGradeCode())
-                .rewardType(view.getRewardType())
-                .amount(view.getAmount())
-                .periodYm(view.getPeriodYm())
-                .grantedAt(view.getGrantedAt())
+                .rewardMonth(view.getRewardMonth())
+                .tokenAmount(view.getTokenAmount())
+                .rewardStatus(view.getRewardStatus())
+                .createdAt(view.getCreatedAt())
                 .build();
     }
 }

@@ -42,17 +42,30 @@ class GradeServiceTest {
                 .loginType(LoginType.LOCAL).status(UserStatus.ACTIVE).grade("ROOKIE").build();
         given(userRepositoryPort.findActiveByMemberUuid("u1")).willReturn(Optional.of(user));
         given(followPort.countFollowers("u1")).willReturn(10L);
-        given(memberGradePort.getCurrentGradeCode(1L)).willReturn(MemberGradeCode.ROOKIE);
-        given(memberGradePort.getMemberGrade(1L)).willReturn(MemberGradeView.builder()
+        given(memberGradePort.getCurrentGradeCode("u1")).willReturn(MemberGradeCode.ROOKIE);
+        given(memberGradePort.getMemberGradeByUuid("u1")).willReturn(MemberGradeView.builder()
                 .memberUuid("u1")
+                .gradeUuid("g1")
                 .gradeCode("LEAF")
-                .nameKo("잎새")
-                .sortOrder(2)
-                .monthlyTokenAmount(20)
-                .gradedAt(LocalDateTime.now())
-                .metrics(MemberGradeView.Metrics.builder()
-                        .storyCount(3).followerCount(10).likeCount(30)
-                        .metricsUpdatedAt(LocalDateTime.now()).build())
+                .gradeName("잎새")
+                .gradeLevel(2)
+                .gradeStatus("ACTIVE")
+                .gradeAssignedAt(LocalDateTime.now())
+                .lastEvaluatedAt(LocalDateTime.now())
+                .metrics(List.of(
+                        MemberGradeView.Metric.builder()
+                                .metricType("STORY").currentValue(3)
+                                .sourceService("content-be").sourceVersion(1)
+                                .synchronizedAt(LocalDateTime.now()).build(),
+                        MemberGradeView.Metric.builder()
+                                .metricType("FOLLOWER").currentValue(10)
+                                .sourceService("fo-user-be").sourceVersion(1)
+                                .synchronizedAt(LocalDateTime.now()).build(),
+                        MemberGradeView.Metric.builder()
+                                .metricType("LIKE").currentValue(30)
+                                .sourceService("content-be").sourceVersion(1)
+                                .synchronizedAt(LocalDateTime.now()).build()
+                ))
                 .benefits(List.of())
                 .build());
 
@@ -61,8 +74,11 @@ class GradeServiceTest {
         assertThat(result.isUpgraded()).isTrue();
         assertThat(result.getPreviousGradeCode()).isEqualTo("ROOKIE");
         assertThat(result.getCurrentGradeCode()).isEqualTo("LEAF");
-        verify(memberGradePort).saveMetrics(1L, "u1", 3, 10, 30);
-        verify(memberGradePort).updateMemberGrade(1L, "u1", MemberGradeCode.LEAF);
+        verify(memberGradePort).upsertMetric("u1", "STORY", 3, "content-be");
+        verify(memberGradePort).upsertMetric("u1", "LIKE", 30, "content-be");
+        verify(memberGradePort).upsertMetric("u1", "FOLLOWER", 10, "fo-user-be");
+        verify(memberGradePort).updateMemberGrade("u1", MemberGradeCode.LEAF);
+        verify(memberGradePort).markEvaluated("u1");
     }
 
     @Test
@@ -73,17 +89,17 @@ class GradeServiceTest {
                 .loginType(LoginType.LOCAL).status(UserStatus.ACTIVE).grade("TRAVELER").build();
         given(userRepositoryPort.findActiveByMemberUuid("u1")).willReturn(Optional.of(user));
         given(followPort.countFollowers("u1")).willReturn(0L);
-        given(memberGradePort.getCurrentGradeCode(1L)).willReturn(MemberGradeCode.TRAVELER);
-        given(memberGradePort.getMemberGrade(1L)).willReturn(MemberGradeView.builder()
+        given(memberGradePort.getCurrentGradeCode("u1")).willReturn(MemberGradeCode.TRAVELER);
+        given(memberGradePort.getMemberGradeByUuid("u1")).willReturn(MemberGradeView.builder()
                 .memberUuid("u1")
+                .gradeUuid("g1")
                 .gradeCode("TRAVELER")
-                .nameKo("여행가")
-                .sortOrder(3)
-                .monthlyTokenAmount(30)
-                .gradedAt(LocalDateTime.now())
-                .metrics(MemberGradeView.Metrics.builder()
-                        .storyCount(0).followerCount(0).likeCount(0)
-                        .metricsUpdatedAt(LocalDateTime.now()).build())
+                .gradeName("여행가")
+                .gradeLevel(3)
+                .gradeStatus("ACTIVE")
+                .gradeAssignedAt(LocalDateTime.now())
+                .lastEvaluatedAt(LocalDateTime.now())
+                .metrics(List.of())
                 .benefits(List.of())
                 .build());
 
@@ -91,23 +107,24 @@ class GradeServiceTest {
 
         assertThat(result.isUpgraded()).isFalse();
         assertThat(result.getCurrentGradeCode()).isEqualTo("TRAVELER");
-        verify(memberGradePort, never()).updateMemberGrade(anyLong(), anyString(), any());
+        verify(memberGradePort, never()).updateMemberGrade(anyString(), any());
     }
 
     @Test
     @DisplayName("monthly reward is idempotent per member/period")
     void grantMonthly_skipsExisting() {
         given(memberGradePort.listAssignmentsForActiveMembers()).willReturn(List.of(
-                new MemberGradePort.MemberGradeAssignment(1L, "u1", MemberGradeCode.ROOKIE),
-                new MemberGradePort.MemberGradeAssignment(2L, "u2", MemberGradeCode.LEAF)
+                new MemberGradePort.MemberGradeAssignment("u1", MemberGradeCode.ROOKIE),
+                new MemberGradePort.MemberGradeAssignment("u2", MemberGradeCode.LEAF)
         ));
-        given(memberGradePort.rewardExists(1L, "2026-08")).willReturn(true);
-        given(memberGradePort.rewardExists(2L, "2026-08")).willReturn(false);
+        given(memberGradePort.rewardExists("u1", "2026-08")).willReturn(true);
+        given(memberGradePort.rewardExists("u2", "2026-08")).willReturn(false);
+        given(memberGradePort.monthlyTokenAmount(MemberGradeCode.LEAF)).willReturn(20);
 
         int created = gradeService.grantForPeriod("2026-08");
 
         assertThat(created).isEqualTo(1);
-        verify(memberGradePort).saveMonthlyReward(2L, MemberGradeCode.LEAF, 20, "2026-08");
-        verify(memberGradePort, never()).saveMonthlyReward(eq(1L), any(), anyInt(), anyString());
+        verify(memberGradePort).saveMonthlyReward("u2", MemberGradeCode.LEAF, 20, "2026-08");
+        verify(memberGradePort, never()).saveMonthlyReward(eq("u1"), any(), anyInt(), anyString());
     }
 }

@@ -3,6 +3,8 @@ package com.planwith.user.application.dto;
 import lombok.Builder;
 import lombok.Getter;
 
+import java.util.List;
+
 @Getter
 @Builder
 public class GradeEvaluateResult {
@@ -11,5 +13,5 @@ public class GradeEvaluateResult {
     private final String previousGradeCode;
     private final String currentGradeCode;
     private final boolean upgraded;
-    private final MemberGradeView.Metrics metrics;
+    private final List<MemberGradeView.Metric> metrics;
 }
