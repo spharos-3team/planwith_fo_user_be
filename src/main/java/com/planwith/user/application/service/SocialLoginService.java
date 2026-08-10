@@ -53,6 +53,8 @@ public class SocialLoginService implements SocialLoginUseCase {
                         .provider(provider.toUpperCase())
                         .email(socialUserInfo.getEmail())
                         .suggestedNickname(socialUserInfo.getNickname())
+                        // code is one-time; client must use this token for social-signup
+                        .providerAccessToken(resolvedToken)
                         .build());
     }
 

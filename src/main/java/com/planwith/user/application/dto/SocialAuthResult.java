@@ -12,4 +12,6 @@ public class SocialAuthResult {
     private final String provider;
     private final String email;
     private final String suggestedNickname;
+    /** Provider access token for social-signup (authorization code is one-time). */
+    private final String providerAccessToken;
 }

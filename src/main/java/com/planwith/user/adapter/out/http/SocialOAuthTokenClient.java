@@ -37,9 +37,9 @@ public class SocialOAuthTokenClient implements SocialOAuthTokenPort {
             @Value("${oauth.naver.client-id:}") String naverClientId,
             @Value("${oauth.naver.client-secret:}") String naverClientSecret) {
         this.restClient = restClientBuilder.build();
-        this.google = new ProviderConfig(googleTokenUri, googleClientId, googleClientSecret);
-        this.kakao = new ProviderConfig(kakaoTokenUri, kakaoClientId, kakaoClientSecret);
-        this.naver = new ProviderConfig(naverTokenUri, naverClientId, naverClientSecret);
+        this.google = new ProviderConfig(googleTokenUri, googleClientId, googleClientSecret, true);
+        this.kakao = new ProviderConfig(kakaoTokenUri, kakaoClientId, kakaoClientSecret, false);
+        this.naver = new ProviderConfig(naverTokenUri, naverClientId, naverClientSecret, true);
     }
 
     @Override
@@ -58,14 +58,20 @@ public class SocialOAuthTokenClient implements SocialOAuthTokenPort {
     }
 
     private String exchange(ProviderConfig config, String code, String redirectUri, String state) {
-        if (!StringUtils.hasText(config.clientId()) || !StringUtils.hasText(config.clientSecret())) {
+        // Kakao client secret is optional; Google/Naver require both id and secret.
+        if (!StringUtils.hasText(config.clientId())) {
+            throw new CustomException(ErrorCode.SOCIAL_OAUTH_MISCONFIGURED);
+        }
+        if (config.requireSecret() && !StringUtils.hasText(config.clientSecret())) {
             throw new CustomException(ErrorCode.SOCIAL_OAUTH_MISCONFIGURED);
         }
 
         MultiValueMap<String, String> form = new LinkedMultiValueMap<>();
         form.add("grant_type", "authorization_code");
         form.add("client_id", config.clientId());
-        form.add("client_secret", config.clientSecret());
+        if (StringUtils.hasText(config.clientSecret())) {
+            form.add("client_secret", config.clientSecret());
+        }
         form.add("code", code);
         form.add("redirect_uri", redirectUri);
         if (StringUtils.hasText(state)) {
@@ -82,17 +88,23 @@ public class SocialOAuthTokenClient implements SocialOAuthTokenPort {
                     });
 
             if (body == null || body.get("access_token") == null) {
+                log.warn("Social token exchange empty access_token for uri={} body={}",
+                        config.tokenUri(), body);
                 throw new CustomException(ErrorCode.SOCIAL_LOGIN_FAILED);
             }
             return String.valueOf(body.get("access_token"));
         } catch (CustomException e) {
             throw e;
+        } catch (org.springframework.web.client.RestClientResponseException e) {
+            log.warn("Social token exchange failed for uri={} status={} body={}",
+                    config.tokenUri(), e.getStatusCode().value(), e.getResponseBodyAsString());
+            throw new CustomException(ErrorCode.SOCIAL_LOGIN_FAILED);
         } catch (Exception e) {
-            log.warn("Social token exchange failed for uri={}", config.tokenUri());
+            log.warn("Social token exchange failed for uri={} cause={}", config.tokenUri(), e.toString());
             throw new CustomException(ErrorCode.SOCIAL_LOGIN_FAILED);
         }
     }
 
-    private record ProviderConfig(String tokenUri, String clientId, String clientSecret) {
+    private record ProviderConfig(String tokenUri, String clientId, String clientSecret, boolean requireSecret) {
     }
 }

@@ -13,6 +13,8 @@ public class SocialAuthResponse {
     private String provider;
     private String email;
     private String suggestedNickname;
+    /** Use this for social-signup; do not reuse authorizationCode. */
+    private String providerAccessToken;
 
     public static SocialAuthResponse from(SocialAuthResult result) {
         return SocialAuthResponse.builder()
@@ -21,6 +23,7 @@ public class SocialAuthResponse {
                 .provider(result.getProvider())
                 .email(result.getEmail())
                 .suggestedNickname(result.getSuggestedNickname())
+                .providerAccessToken(result.getProviderAccessToken())
                 .build();
     }
 }

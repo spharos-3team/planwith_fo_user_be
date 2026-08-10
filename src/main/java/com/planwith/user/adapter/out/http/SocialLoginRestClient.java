@@ -107,8 +107,12 @@ public class SocialLoginRestClient implements SocialUserInfoPort {
             return result;
         } catch (CustomException e) {
             throw e;
+        } catch (org.springframework.web.client.RestClientResponseException e) {
+            log.warn("Social userinfo request failed for uri={} status={} body={}",
+                    uri, e.getStatusCode().value(), e.getResponseBodyAsString());
+            throw new CustomException(ErrorCode.SOCIAL_LOGIN_FAILED);
         } catch (Exception e) {
-            log.warn("Social userinfo request failed for uri={}", uri);
+            log.warn("Social userinfo request failed for uri={} cause={}", uri, e.toString());
             throw new CustomException(ErrorCode.SOCIAL_LOGIN_FAILED);
         }
     }
