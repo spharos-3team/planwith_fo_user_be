@@ -25,8 +25,10 @@ public class EmailVerificationPersistenceAdapter implements EmailVerificationPor
     @Override
     @Transactional
     public void saveNewCode(String email, String code) {
+        String normalizedEmail = email == null ? "" : email.trim();
+        String normalizedCode = code == null ? "" : code.trim();
         EmailVerification domain = EmailVerification.createPending(
-                email, code, LocalDateTime.now().plusMinutes(CODE_EXPIRE_MINUTES));
+                normalizedEmail, normalizedCode, LocalDateTime.now().plusMinutes(CODE_EXPIRE_MINUTES));
 
         emailVerificationJpaRepository.save(EmailVerificationJpaEntity.builder()
                 .email(domain.getEmail())
@@ -38,7 +40,8 @@ public class EmailVerificationPersistenceAdapter implements EmailVerificationPor
     @Override
     @Transactional(readOnly = true)
     public Optional<EmailVerification> findLatestByEmail(String email) {
-        return emailVerificationJpaRepository.findTopByEmailOrderByCreatedAtDesc(email)
+        String normalizedEmail = email == null ? "" : email.trim();
+        return emailVerificationJpaRepository.findTopByEmailOrderByCreatedAtDesc(normalizedEmail)
                 .map(this::toDomain);
     }
 

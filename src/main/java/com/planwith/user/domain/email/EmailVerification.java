@@ -31,7 +31,12 @@ public class EmailVerification {
     }
 
     public boolean matchesCode(String inputCode) {
-        return code != null && code.equals(inputCode);
+        if (code == null || inputCode == null) {
+            return false;
+        }
+        String expected = code.trim();
+        String actual = inputCode.trim().replaceAll("\\s+", "");
+        return expected.equals(actual);
     }
 
     public boolean isVerifiedWithin(LocalDateTime since) {

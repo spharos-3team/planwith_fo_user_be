@@ -18,13 +18,21 @@ public class VerifyEmailCodeService implements VerifyEmailCodeUseCase {
     @Override
     @Transactional
     public void verifyCode(String email, String code) {
-        EmailVerification verification = emailVerificationPort.findLatestByEmail(email)
+        String normalizedEmail = email == null ? "" : email.trim();
+        String normalizedCode = code == null ? "" : code.trim().replaceAll("\\s+", "");
+
+        EmailVerification verification = emailVerificationPort.findLatestByEmail(normalizedEmail)
                 .orElseThrow(() -> new CustomException(ErrorCode.EMAIL_VERIFICATION_NOT_FOUND));
+
+        // 이미 같은 코드로 인증된 최신 건이면 성공으로 처리 (재클릭/연타)
+        if (verification.isVerified() && verification.matchesCode(normalizedCode) && !verification.isExpired()) {
+            return;
+        }
 
         if (verification.isExpired()) {
             throw new CustomException(ErrorCode.EMAIL_VERIFICATION_EXPIRED);
         }
-        if (!verification.matchesCode(code)) {
+        if (!verification.matchesCode(normalizedCode)) {
             throw new CustomException(ErrorCode.EMAIL_VERIFICATION_MISMATCH);
         }
 
