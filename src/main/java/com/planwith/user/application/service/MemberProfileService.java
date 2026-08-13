@@ -26,8 +26,14 @@ public class MemberProfileService implements GetMyProfileUseCase, GetMemberProfi
 
     @Override
     public MemberProfileInfo getMyProfile(Long memberId) {
-        User user = userRepositoryPort.findActiveById(memberId)
+        User user = userRepositoryPort.findById(memberId)
                 .orElseThrow(() -> new CustomException(ErrorCode.USER_NOT_FOUND));
+        if (user.isSuspended()) {
+            throw new CustomException(ErrorCode.ACCOUNT_SUSPENDED);
+        }
+        if (!user.isActive()) {
+            throw new CustomException(ErrorCode.USER_NOT_FOUND);
+        }
         return toInfo(user, true, null);
     }
 

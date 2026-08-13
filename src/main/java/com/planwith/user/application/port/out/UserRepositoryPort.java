@@ -19,6 +19,12 @@ public interface UserRepositoryPort {
 
     Optional<User> findActiveByEmail(String email);
 
+    /** 상태와 무관하게 이메일로 조회 (정지 계정 판별용) */
+    Optional<User> findByEmail(String email);
+
+    /** 상태와 무관하게 소셜 계정 조회 (정지 계정 판별용) */
+    Optional<User> findByLoginTypeAndProviderId(LoginType loginType, String providerId);
+
     boolean existsActiveByEmail(String email);
 
     boolean existsActiveByNickname(String nickname);

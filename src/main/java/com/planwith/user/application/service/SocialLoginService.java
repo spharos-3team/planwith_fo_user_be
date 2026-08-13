@@ -38,24 +38,31 @@ public class SocialLoginService implements SocialLoginUseCase {
                 loginType, accessToken, authorizationCode, redirectUri, state);
         SocialUserInfoPort.SocialUserInfo socialUserInfo = socialUserInfoPort.getUserInfo(loginType, resolvedToken);
 
-        return userRepositoryPort
-                .findActiveByLoginTypeAndProviderId(loginType, socialUserInfo.getProviderId())
-                .map(user -> {
-                    user.recordLastLogin(LocalDateTime.now());
-                    User saved = userRepositoryPort.save(user);
-                    return SocialAuthResult.builder()
-                            .needsSignup(false)
-                            .tokens(tokenIssuanceService.issueTokens(saved))
-                            .build();
-                })
-                .orElseGet(() -> SocialAuthResult.builder()
-                        .needsSignup(true)
-                        .provider(provider.toUpperCase())
-                        .email(socialUserInfo.getEmail())
-                        .suggestedNickname(socialUserInfo.getNickname())
-                        // code is one-time; client must use this token for social-signup
-                        .providerAccessToken(resolvedToken)
-                        .build());
+        var existing = userRepositoryPort.findByLoginTypeAndProviderId(loginType, socialUserInfo.getProviderId());
+        if (existing.isPresent()) {
+            User user = existing.get();
+            if (user.isSuspended()) {
+                throw new CustomException(ErrorCode.ACCOUNT_SUSPENDED);
+            }
+            if (!user.isActive()) {
+                throw new CustomException(ErrorCode.SOCIAL_LOGIN_FAILED);
+            }
+            user.recordLastLogin(LocalDateTime.now());
+            User saved = userRepositoryPort.save(user);
+            return SocialAuthResult.builder()
+                    .needsSignup(false)
+                    .tokens(tokenIssuanceService.issueTokens(saved))
+                    .build();
+        }
+
+        return SocialAuthResult.builder()
+                .needsSignup(true)
+                .provider(provider.toUpperCase())
+                .email(socialUserInfo.getEmail())
+                .suggestedNickname(socialUserInfo.getNickname())
+                // code is one-time; client must use this token for social-signup
+                .providerAccessToken(resolvedToken)
+                .build();
     }
 
     private LoginType parseLoginType(String provider) {

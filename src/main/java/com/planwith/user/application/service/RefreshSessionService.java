@@ -51,6 +51,10 @@ public class RefreshSessionService implements RefreshSessionUseCase {
         Long userId = parseUserId(session.getUserId());
         User user = userRepositoryPort.findById(userId)
                 .orElseThrow(() -> new CustomException(ErrorCode.USER_NOT_FOUND));
+        if (user.isSuspended()) {
+            refreshTokenSessionPort.deleteByUserId(session.getUserId());
+            throw new CustomException(ErrorCode.ACCOUNT_SUSPENDED);
+        }
         if (!user.isActive()) {
             throw new CustomException(ErrorCode.INVALID_REFRESH_TOKEN);
         }

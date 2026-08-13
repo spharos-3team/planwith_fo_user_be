@@ -26,9 +26,15 @@ public class LoginService implements LoginUseCase {
     @Override
     @Transactional
     public TokenPair login(String email, String password) {
-        User user = userRepositoryPort.findActiveByEmail(email)
+        User user = userRepositoryPort.findByEmail(email)
                 .orElseThrow(() -> new CustomException(ErrorCode.INVALID_CREDENTIALS));
 
+        if (user.isSuspended()) {
+            throw new CustomException(ErrorCode.ACCOUNT_SUSPENDED);
+        }
+        if (!user.isActive()) {
+            throw new CustomException(ErrorCode.INVALID_CREDENTIALS);
+        }
         if (user.getLoginType() != LoginType.LOCAL || user.getPassword() == null) {
             throw new CustomException(ErrorCode.INVALID_CREDENTIALS);
         }

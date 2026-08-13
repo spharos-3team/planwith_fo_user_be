@@ -87,6 +87,20 @@ public class UserPersistenceAdapter implements UserRepositoryPort {
     }
 
     @Override
+    public Optional<User> findByEmail(String email) {
+        return memberAuthJpaRepository.findByLoginTypeAndEmail(LoginType.LOCAL, email)
+                .flatMap(auth -> memberJpaRepository.findById(auth.getMemberId())
+                        .flatMap(member -> assemble(member, auth)));
+    }
+
+    @Override
+    public Optional<User> findByLoginTypeAndProviderId(LoginType loginType, String providerId) {
+        return memberAuthJpaRepository.findByLoginTypeAndSocialId(loginType, providerId)
+                .flatMap(auth -> memberJpaRepository.findById(auth.getMemberId())
+                        .flatMap(member -> assemble(member, auth)));
+    }
+
+    @Override
     public boolean existsActiveByEmail(String email) {
         return memberAuthJpaRepository.findByLoginTypeAndEmail(LoginType.LOCAL, email)
                 .flatMap(auth -> loadActiveMember(auth.getMemberId()))
