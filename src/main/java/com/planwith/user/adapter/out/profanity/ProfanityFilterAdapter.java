@@ -9,6 +9,8 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
 
+import java.text.Normalizer;
+import java.util.HashSet;
 import java.util.Locale;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicReference;
@@ -19,13 +21,13 @@ import java.util.stream.Collectors;
 @RequiredArgsConstructor
 public class ProfanityFilterAdapter implements ProfanityFilterPort {
 
-    /** Fallback when banned_word table is empty (before seed SQL is applied). */
-    private static final Set<String> FALLBACK_WORDS = Set.of(
-            "시발", "씨발", "병신", "개새끼", "좆", "지랄", "미친놈", "미친년"
+    /** Always merged into the live dictionary (DB seed may store jamo variants only). */
+    private static final Set<String> CORE_WORDS = Set.of(
+            "시발", "씨발", "시팔", "씨팔", "병신", "개새끼", "좆", "지랄", "미친놈", "미친년"
     );
 
     private final BannedWordJpaRepository bannedWordJpaRepository;
-    private final AtomicReference<Set<String>> bannedWords = new AtomicReference<>(FALLBACK_WORDS);
+    private final AtomicReference<Set<String>> bannedWords = new AtomicReference<>(normalizeAll(CORE_WORDS));
 
     @PostConstruct
     void loadBannedWords() {
@@ -35,15 +37,12 @@ public class ProfanityFilterAdapter implements ProfanityFilterPort {
     public void refresh() {
         Set<String> fromDb = bannedWordJpaRepository.findAllWords().stream()
                 .filter(word -> word != null && !word.isBlank())
-                .map(word -> word.replaceAll("\\s+", "").toLowerCase(Locale.ROOT))
-                .collect(Collectors.toUnmodifiableSet());
-        if (fromDb.isEmpty()) {
-            bannedWords.set(FALLBACK_WORDS);
-            log.info("banned_word table empty — using fallback dictionary ({} words)", FALLBACK_WORDS.size());
-            return;
-        }
-        bannedWords.set(fromDb);
-        log.info("Loaded {} banned words from database", fromDb.size());
+                .map(this::normalize)
+                .filter(word -> !word.isBlank())
+                .collect(Collectors.toCollection(HashSet::new));
+        fromDb.addAll(normalizeAll(CORE_WORDS));
+        bannedWords.set(Set.copyOf(fromDb));
+        log.info("Loaded {} banned words (db+core, NFKC-normalized)", fromDb.size());
     }
 
     @Override
@@ -57,7 +56,20 @@ public class ProfanityFilterAdapter implements ProfanityFilterPort {
         if (text == null || text.isBlank()) {
             return false;
         }
-        String normalized = text.replaceAll("\\s+", "").toLowerCase(Locale.ROOT);
+        String normalized = normalize(text);
         return bannedWords.get().stream().anyMatch(normalized::contains);
+    }
+
+    private Set<String> normalizeAll(Set<String> words) {
+        return words.stream().map(this::normalize).collect(Collectors.toUnmodifiableSet());
+    }
+
+    /** 자모/완성형 표기를 같은 형태로 맞추고 공백을 제거한다. */
+    private String normalize(String text) {
+        if (text == null) {
+            return "";
+        }
+        String compact = text.replaceAll("\\s+", "");
+        return Normalizer.normalize(compact, Normalizer.Form.NFKC).toLowerCase(Locale.ROOT);
     }
 }

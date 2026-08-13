@@ -28,7 +28,7 @@ public enum ErrorCode {
     SOCIAL_OAUTH_MISCONFIGURED(HttpStatus.INTERNAL_SERVER_ERROR, "소셜 로그인 OAuth 설정이 올바르지 않습니다."),
     SOCIAL_CREDENTIAL_REQUIRED(HttpStatus.BAD_REQUEST, "accessToken 또는 authorizationCode(+redirectUri)가 필요합니다."),
     REQUIRED_TERMS_NOT_AGREED(HttpStatus.BAD_REQUEST, "필수 약관에 모두 동의해주세요."),
-    PROFANITY_DETECTED(HttpStatus.BAD_REQUEST, "닉네임 또는 소개글에 사용할 수 없는 표현이 포함되어 있습니다."),
+    PROFANITY_DETECTED(HttpStatus.BAD_REQUEST, "사용 불가능한 단어가 들어있습니다."),
     INVALID_IMAGE_FORMAT(HttpStatus.BAD_REQUEST, "이미지는 jpg, jpeg, png, webp 형식만 등록할 수 있습니다."),
     IMAGE_TOO_LARGE(HttpStatus.BAD_REQUEST, "이미지 용량은 5MB를 초과할 수 없습니다."),
     INVALID_IMAGE_DIMENSION(HttpStatus.BAD_REQUEST, "프로필 사진은 400x400 픽셀 정사각형이어야 합니다."),

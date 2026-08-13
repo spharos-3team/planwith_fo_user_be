@@ -35,6 +35,20 @@ public class MemberProfileService implements GetMyProfileUseCase, GetMemberProfi
     public MemberProfileInfo getByMemberUuid(String memberUuid, Long viewerMemberIdOrNull) {
         User user = userRepositoryPort.findActiveByMemberUuid(memberUuid)
                 .orElseThrow(() -> new CustomException(ErrorCode.USER_NOT_FOUND));
+        return toPublicInfo(user, viewerMemberIdOrNull);
+    }
+
+    @Override
+    public MemberProfileInfo getByNickname(String nickname, Long viewerMemberIdOrNull) {
+        if (!StringUtils.hasText(nickname)) {
+            throw new CustomException(ErrorCode.USER_NOT_FOUND);
+        }
+        User user = userRepositoryPort.findActiveByNickname(nickname.trim())
+                .orElseThrow(() -> new CustomException(ErrorCode.USER_NOT_FOUND));
+        return toPublicInfo(user, viewerMemberIdOrNull);
+    }
+
+    private MemberProfileInfo toPublicInfo(User user, Long viewerMemberIdOrNull) {
         Boolean followedByMe = null;
         if (viewerMemberIdOrNull != null) {
             User viewer = userRepositoryPort.findActiveById(viewerMemberIdOrNull).orElse(null);

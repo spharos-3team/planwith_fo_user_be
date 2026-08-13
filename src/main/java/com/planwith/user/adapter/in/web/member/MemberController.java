@@ -50,6 +50,16 @@ public class MemberController {
         return ResponseEntity.ok(ApiResponse.success(MemberProfileResponse.from(info)));
     }
 
+    @GetMapping("/search")
+    public ResponseEntity<ApiResponse<MemberProfileResponse>> searchByNickname(
+            @RequestParam String nickname,
+            AuthenticatedUserContext userContext
+    ) {
+        Long viewerId = userContext.isAuthenticated() ? Long.valueOf(userContext.userId()) : null;
+        var info = getMemberProfileUseCase.getByNickname(nickname, viewerId);
+        return ResponseEntity.ok(ApiResponse.success(MemberProfileResponse.from(info)));
+    }
+
     @GetMapping("/{memberUuid}")
     public ResponseEntity<ApiResponse<MemberProfileResponse>> getMemberProfile(
             @PathVariable String memberUuid,

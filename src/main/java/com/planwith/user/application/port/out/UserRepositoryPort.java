@@ -15,6 +15,8 @@ public interface UserRepositoryPort {
 
     Optional<User> findActiveByMemberUuid(String memberUuid);
 
+    Optional<User> findActiveByNickname(String nickname);
+
     Optional<User> findActiveByEmail(String email);
 
     boolean existsActiveByEmail(String email);

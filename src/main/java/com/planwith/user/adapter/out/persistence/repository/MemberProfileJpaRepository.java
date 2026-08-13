@@ -35,4 +35,6 @@ public interface MemberProfileJpaRepository extends JpaRepository<MemberProfileJ
             @Param("excludedStatus") UserStatus excludedStatus);
 
     Optional<MemberProfileJpaEntity> findByMemberUuid(String memberUuid);
+
+    Optional<MemberProfileJpaEntity> findByNickname(String nickname);
 }

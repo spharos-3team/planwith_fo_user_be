@@ -26,6 +26,9 @@ public class GatewayTrustInterceptor implements HandlerInterceptor {
             "/actuator/health",
             "/actuator/health/**",
             "/actuator/info",
+            // 프로필 이미지 등 브라우저가 직접 로드하는 정적 파일
+            "/files",
+            "/files/**",
             // local API docs (Try it out should target Gateway; UI itself is BE-local)
             "/swagger-ui.html",
             "/swagger-ui/**",
