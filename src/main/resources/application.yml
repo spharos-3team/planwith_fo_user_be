@@ -1,0 +1,152 @@
+server:
+  port: 8080
+  shutdown: graceful
+
+spring:
+  application:
+    name: fo-user-be
+  profiles:
+    default: local
+  lifecycle:
+    timeout-per-shutdown-phase: 30s
+  jackson:
+    time-zone: UTC
+  datasource:
+    url: ${DB_URL}
+    username: ${DB_USERNAME}
+    password: ${DB_PASSWORD}
+    driver-class-name: com.mysql.cj.jdbc.Driver
+  jpa:
+    hibernate:
+      ddl-auto: update
+    properties:
+      hibernate:
+        format_sql: true
+        jdbc:
+          time_zone: UTC
+    open-in-view: false
+  data:
+    redis:
+      host: ${REDIS_HOST:localhost}
+      port: ${REDIS_PORT:6379}
+      password: ${REDIS_PASSWORD:}
+    mongodb:
+      uri: ${MONGODB_URI:mongodb://localhost:27017/planwith}
+  kafka:
+    bootstrap-servers: ${KAFKA_BOOTSTRAP_SERVERS:localhost:9092}
+  mail:
+    host: smtp.gmail.com
+    port: 587
+    username: ${MAIL_USERNAME:}
+    password: ${MAIL_PASSWORD:}
+    properties:
+      mail:
+        smtp:
+          auth: true
+          starttls:
+            enable: true
+  servlet:
+    multipart:
+      max-file-size: 5MB
+      max-request-size: 5MB
+
+eureka:
+  client:
+    register-with-eureka: true
+    fetch-registry: true
+    service-url:
+      defaultZone: ${EUREKA_DEFAULT_ZONE:http://localhost:8761/eureka/}
+  instance:
+    prefer-ip-address: true
+    instance-id: ${EUREKA_INSTANCE_ID:${spring.application.name}:${server.port}}
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info
+  endpoint:
+    health:
+      probes:
+        enabled: true
+      group:
+        liveness:
+          include: livenessState
+        readiness:
+          include: readinessState,db
+
+app:
+  gateway:
+    internal-token: ${GATEWAY_INTERNAL_TOKEN:}
+    trust-check-enabled: ${GATEWAY_TRUST_CHECK_ENABLED:true}
+  jwt:
+    issuer: ${JWT_ISSUER:http://localhost:8080}
+    audience: ${JWT_AUDIENCE:planwith-api}
+    key-id: ${JWT_KEY_ID:fo-user-be-key-1}
+    private-key-path: ${JWT_PRIVATE_KEY_PATH:}
+    public-key-path: ${JWT_PUBLIC_KEY_PATH:}
+    private-key-pem: ${JWT_PRIVATE_KEY_PEM:}
+    public-key-pem: ${JWT_PUBLIC_KEY_PEM:}
+    access-token-ttl: ${JWT_ACCESS_TOKEN_TTL:15m}
+    refresh-token-ttl: ${JWT_REFRESH_TOKEN_TTL:14d}
+  refresh-cookie:
+    name: refresh_token
+    secure: ${REFRESH_COOKIE_SECURE:false}
+    same-site: ${REFRESH_COOKIE_SAME_SITE:Lax}
+    domain: ${REFRESH_COOKIE_DOMAIN:}
+    path: ${REFRESH_COOKIE_PATH:/api/v1/auth}
+  cors:
+    enabled: false
+  sse:
+    ticket-ttl: 30s
+    emitter-timeout: 30m
+    heartbeat-interval: 15s
+
+email:
+  verification:
+    mock-mode: ${EMAIL_MOCK_MODE:false}
+
+file:
+  upload-dir: ${FILE_UPLOAD_DIR:/tmp/planwith-uploads}
+  public-base-url: ${FILE_PUBLIC_BASE_URL:/files}
+
+oauth:
+  google:
+    client-id: ${OAUTH_GOOGLE_CLIENT_ID:}
+    client-secret: ${OAUTH_GOOGLE_CLIENT_SECRET:}
+    token-uri: ${OAUTH_GOOGLE_TOKEN_URI:https://oauth2.googleapis.com/token}
+    userinfo-uri: ${OAUTH_GOOGLE_USERINFO_URI:https://www.googleapis.com/oauth2/v3/userinfo}
+  kakao:
+    client-id: ${OAUTH_KAKAO_CLIENT_ID:}
+    client-secret: ${OAUTH_KAKAO_CLIENT_SECRET:}
+    token-uri: ${OAUTH_KAKAO_TOKEN_URI:https://kauth.kakao.com/oauth/token}
+    userinfo-uri: ${OAUTH_KAKAO_USERINFO_URI:https://kapi.kakao.com/v2/user/me}
+  naver:
+    client-id: ${OAUTH_NAVER_CLIENT_ID:}
+    client-secret: ${OAUTH_NAVER_CLIENT_SECRET:}
+    token-uri: ${OAUTH_NAVER_TOKEN_URI:https://nid.naver.com/oauth2.0/token}
+    userinfo-uri: ${OAUTH_NAVER_USERINFO_URI:https://openapi.naver.com/v1/nid/me}
+
+aws:
+  s3:
+    enabled: ${AWS_S3_ENABLED:false}
+    bucket: ${AWS_S3_BUCKET:}
+    region: ${AWS_REGION:ap-northeast-2}
+    access-key: ${AWS_ACCESS_KEY_ID:}
+    secret-key: ${AWS_SECRET_ACCESS_KEY:}
+    key-prefix: ${AWS_S3_KEY_PREFIX:profile-images/}
+    # CloudFront or public bucket base (no trailing slash). Empty => virtual-hosted S3 URL.
+    public-base-url: ${AWS_S3_PUBLIC_BASE_URL:}
+    # Prefer bucket policy / CloudFront over ACL; many buckets disable ACLs.
+    public-read-acl: ${AWS_S3_PUBLIC_READ_ACL:false}
+  rekognition:
+    enabled: ${REKOGNITION_ENABLED:true}
+    region: ${AWS_REGION:ap-northeast-2}
+    access-key: ${AWS_ACCESS_KEY_ID:}
+    secret-key: ${AWS_SECRET_ACCESS_KEY:}
+    confidence-threshold: ${REKOGNITION_THRESHOLD:70}
+
+logging:
+  level:
+    root: INFO
+    com.planwith.user: INFO
