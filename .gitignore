@@ -1,6 +1,7 @@
 .gradle/
 build/
-out/
+# Only the IDE/compiler output dir at repo root (do NOT ignore adapter/out, port/out, etc.)
+/out/
 bin/
 *.class
 *.jar
