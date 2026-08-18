@@ -1,0 +1,52 @@
+spring:
+  datasource:
+    url: ${DB_URL}
+    username: ${DB_USERNAME}
+    password: ${DB_PASSWORD}
+    driver-class-name: com.mysql.cj.jdbc.Driver
+  jpa:
+    hibernate:
+      ddl-auto: validate
+
+eureka:
+  client:
+    register-with-eureka: true
+    fetch-registry: true
+
+app:
+  gateway:
+    internal-token: ${GATEWAY_INTERNAL_TOKEN}
+    trust-check-enabled: true
+  jwt:
+    issuer: ${JWT_ISSUER}
+    audience: ${JWT_AUDIENCE:planwith-api}
+    key-id: ${JWT_KEY_ID}
+    private-key-path: ${JWT_PRIVATE_KEY_PATH}
+    public-key-path: ${JWT_PUBLIC_KEY_PATH}
+    access-token-ttl: ${JWT_ACCESS_TOKEN_TTL:15m}
+    refresh-token-ttl: ${JWT_REFRESH_TOKEN_TTL:14d}
+  refresh-cookie:
+    secure: ${REFRESH_COOKIE_SECURE:true}
+    same-site: ${REFRESH_COOKIE_SAME_SITE:Lax}
+    domain: ${REFRESH_COOKIE_DOMAIN:}
+    path: ${REFRESH_COOKIE_PATH:/api/v1/auth}
+  cors:
+    enabled: false
+
+email:
+  verification:
+    mock-mode: false
+
+springdoc:
+  api-docs:
+    enabled: false
+  swagger-ui:
+    enabled: false
+
+aws:
+  s3:
+    enabled: true
+    bucket: ${AWS_S3_BUCKET}
+    public-base-url: ${AWS_S3_PUBLIC_BASE_URL:}
+  rekognition:
+    enabled: true
